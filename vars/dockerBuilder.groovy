@@ -90,6 +90,7 @@ def call(body) {
           env.NO_TAG_CHECK = dockerNoTagCheck
           env.DOCKER_COMMIT_TAG = (dockerNoTagCheck == "true") ? dockerEnvTag : gitSha
           env.DOCKER_TLS_VERIFY = ""
+          env.DOCKER_DAEMON_URL = dockerDaemonUrl
 
           echo "Using remote docker daemon: ${dockerDaemonUrl}"
           docker_bin="docker -H $dockerDaemonUrl"
