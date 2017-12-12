@@ -32,7 +32,7 @@ def call(body) {
   }
 
   def gitRepoUrl = config.gitRepoUrl
-  def gitCredentialsId
+  def gitCredentialsId = config.gitCredentialsId
   def gitSha = config.gitSha
 
   def dockerImageName = config.dockerImageName
