@@ -34,6 +34,8 @@ def call(body) {
 
   def slackChannelName = config.slackChannelName ?: 'jenkins'
   def slackToken = config.slackToken
+  def muteSlack = config.dockerEnvTag ?: 'false'
+  muteSlack = (muteSlack == 'true')
 
   def gitRepoUrl = config.gitRepoUrl
   def gitCredentialsId = config.gitCredentialsId
@@ -66,10 +68,10 @@ def call(body) {
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
 
-        if (config.slackChannelName){
+        if (config.slackChannelName && !muteSlack){
           slackSend channel:"#${slackChannelName}",
                     color:'good',
-                    message:"*START* Build of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER}\n(${env.BUILD_URL})\n *Build started by* :${getuser()}"
+                    message:"*START* Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER}\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* :${getuser()}"
         }
       }
 
@@ -119,19 +121,19 @@ def call(body) {
 
           if (exit_code != 0 && exit_code != 3){
             currentBuild.result = 'FAILURE'
-            if (config.slackChannelName){
+            if (config.slackChannelName && !muteSlack){
               slackSend channel:"#${slackChannelName}",
                         color:'danger',
-                        message:"Build of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\n*Build started by* : ${getuser()}"
+                        message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getuser()}"
             }
             return
           }
 
           currentBuild.result = 'SUCCESS'
-          if (config.slackChannelName){
+          if (config.slackChannelName && !muteSlack){
             slackSend channel:"#${slackChannelName}",
                       color:'good',
-                      message:"Build of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\n*Build started by* : ${getuser()}"
+                      message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getuser()}"
           }
          }
      }
