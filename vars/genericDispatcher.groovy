@@ -73,7 +73,7 @@ def call(body) {
     }
   }
 
-  if is_main_branch() {
+  if (is_main_branch()) {
     stage("build-image:") {
       dockerBuilder {
           gitRepoUrl = jobGitRepoUrl
