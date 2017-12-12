@@ -3,7 +3,10 @@
 def is_main_branch(){
   return params.BRANCH == "origin/develop" ||
   params.BRANCH == "origin/stage" ||
-  params.BRANCH == "origin/master"
+  params.BRANCH == "origin/master" ||
+  params.BRANCH == "develop" ||
+  params.BRANCH == "stage" ||
+  params.BRANCH == "master"
 }
 
 def call(body) {
