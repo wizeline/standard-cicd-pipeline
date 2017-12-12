@@ -128,7 +128,7 @@ def call(body) {
           currentBuild.result = 'SUCCESS'
           if (config.slackChannelName){
             slackSend channel:"#${slackChannelName}",
-                      color:'good',1
+                      color:'good',
                       message:"Build of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\n*Build started by* : ${getuser()}"
           }
          }
