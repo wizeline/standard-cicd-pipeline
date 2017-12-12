@@ -40,7 +40,7 @@ def call(body) {
         // Clean workspace before doing anything
         deleteDir()
 
-        env.DOCKER_TLS_VERIFY = null
+        env.DOCKER_TLS_VERIFY = ""
 
         echo "Using remote docker daemon: ${dockerDaemonUrl}"
         docker_bin="docker -H $dockerDaemonUrl"
