@@ -9,6 +9,7 @@ def call(body) {
     body()
   }
 
+  echo "dockerRunner.groovy"
   print config
 
   if (!config.dockerImageName) {

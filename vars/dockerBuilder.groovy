@@ -9,6 +9,7 @@ def call(body) {
     body()
   }
 
+  echo "dockerBuilder.groovy"
   print config
 
   if (!config.gitRepoUrl) {
