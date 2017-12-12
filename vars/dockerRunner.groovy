@@ -68,7 +68,8 @@ def call(body) {
         if (exit_code != 0 && exit_code != 3){
           echo "FAILURE"
           currentBuild.result = 'FAILURE'
-          return
+          error("FAILURE - Run container returned non 0 exit code")
+          return 1
         }
 
         echo "SUCCESS"

@@ -127,6 +127,7 @@ def call(body) {
                         color:'danger',
                         message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getuser()}"
             }
+            error("FAILURE - Build container returned non 0 exit code")
             return 1
           }
 
