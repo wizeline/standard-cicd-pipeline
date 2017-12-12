@@ -97,7 +97,7 @@ def call(body) {
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
           rm .env
 
-          [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE";
+          [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           """, returnStatus: true
 
           // Ensure every exited container has been removed

@@ -55,7 +55,7 @@ def call(body) {
         docker_id=\$($docker_bin create $dockerRegistry/$dockerImageName:$dockerImageTag)
         $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
 
-        [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE";
+        [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE;
         """, returnStatus: true
 
         // Ensure every exited container has been removed
