@@ -31,6 +31,9 @@ def call(body) {
     error 'You must provide a dockerRegistryCredentialsId'
   }
 
+  def slackChannelName = config.slackChannelName ?: 'jenkins'
+  def slackToken = config.slackToken
+
   def gitRepoUrl = config.gitRepoUrl
   def gitCredentialsId = config.gitCredentialsId
   def gitSha = config.gitSha
@@ -61,6 +64,12 @@ def call(body) {
 
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
+
+        if (config.slackChannelName){
+          slackSend channel:"#${slackChannelName}",
+                    color:'good',
+                    message:"*START* Build of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER}\n(${env.BUILD_URL})\n *Build started by* :${getuser()}"
+        }
       }
 
      stage('CDPathDockerBuildRetagPush'){
@@ -108,10 +117,20 @@ def call(body) {
 
           if (exit_code != 0 && exit_code != 3){
             currentBuild.result = 'FAILURE'
+            if (config.slackChannelName){
+              slackSend channel:"#${slackChannelName}",
+                        color:'danger',
+                        message:"Build of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\n*Build started by* : ${getuser()}"
+            }
             return
           }
 
           currentBuild.result = 'SUCCESS'
+          if (config.slackChannelName){
+            slackSend channel:"#${slackChannelName}",
+                      color:'good',1
+                      message:"Build of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\n*Build started by* : ${getuser()}"
+          }
          }
      }
 
