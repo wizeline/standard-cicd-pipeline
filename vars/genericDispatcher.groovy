@@ -18,7 +18,8 @@ def call(body) {
   deleteDir()
 
   stage ('Checkout') {
-    git branch: gitSha, url: gitRepoUrl, credentialsId: gitCredentialsId
+    // git branch: gitSha, url: gitRepoUrl, credentialsId: gitCredentialsId
+    git branch: '**', url: "${params.GIT_REPO_URL}", credentialsId: "${params.GIT_CREDENTIALS_ID}"
     gitBranch = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
     gitSha = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
 
