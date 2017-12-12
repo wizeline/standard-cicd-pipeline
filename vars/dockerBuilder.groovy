@@ -111,6 +111,7 @@ def call(body) {
           rm .env
 
           [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE;
+          exit 0
           """, returnStatus: true
 
           // Ensure every exited container has been removed
