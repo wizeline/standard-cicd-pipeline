@@ -34,7 +34,7 @@ def call(body) {
 
   def slackChannelName = config.slackChannelName ?: 'jenkins'
   def slackToken = config.slackToken
-  def muteSlack = config.dockerEnvTag ?: 'false'
+  def muteSlack = config.muteSlack ?: 'false'
   muteSlack = (muteSlack == 'true')
 
   def gitRepoUrl = config.gitRepoUrl

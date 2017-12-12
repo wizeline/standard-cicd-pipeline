@@ -24,6 +24,11 @@ def call(body) {
     error 'You must provide a dockerRegistryCredentialsId'
   }
 
+  def slackChannelName = config.slackChannelName ?: 'jenkins'
+  def slackToken = config.slackToken
+  def muteSlack = config.muteSlack ?: 'false'
+  muteSlack = (muteSlack == 'true')
+
   def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: ''
   def dockerDaemonUrl = config.dockerDaemonUrl ?: 'tcp://internal-docker.wize.mx:4243'
   def dockerRegistry = config.dockerRegistry ?: 'devops.wize.mx:5000'
@@ -69,12 +74,22 @@ def call(body) {
         if (exit_code != 0 && exit_code != 3){
           echo "FAILURE"
           currentBuild.result = 'FAILURE'
+          if (config.slackChannelName && !muteSlack){
+            slackSend channel:"#${slackChannelName}",
+                      color:'danger',
+                      message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
+          }
           error("FAILURE - Run container returned non 0 exit code")
           return 1
         }
 
         echo "SUCCESS"
         currentBuild.result = 'SUCCESS'
+        if (config.slackChannelName && !muteSlack){
+          slackSend channel:"#${slackChannelName}",
+                    color:'good',
+                    message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
+        }
      }
 
    }}
