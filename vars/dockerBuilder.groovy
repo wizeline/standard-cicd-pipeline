@@ -89,7 +89,7 @@ def call(body) {
           sh "$docker_bin login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD devops.wize.mx:5000"
 
           // Call the buidler container
-          exit_code = sh """
+          exit_code = sh script: """
           env | sort | grep -E \"DOCKER|NO_TAG_CHECK\" > .env
           $docker_bin rmi -f devops.wize.mx:5000/jobs-as-a-service || true
           docker_id=\$($docker_bin create --env-file .env devops.wize.mx:5000/jobs-as-a-service /build)

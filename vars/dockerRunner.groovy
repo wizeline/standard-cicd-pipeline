@@ -50,7 +50,7 @@ def call(body) {
         sh "$docker_bin login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD devops.wize.mx:5000"
 
         // Call the buidler container
-        exit_code = sh """
+        exit_code = sh script: """
         $docker_bin rmi -f $dockerRegistry/$dockerImageName || true
         docker_id=\$($docker_bin create $dockerRegistry/$dockerImageName:$dockerImageTag)
         $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
@@ -59,7 +59,7 @@ def call(body) {
         """, returnStatus: true
 
         // Ensure every exited container has been removed
-        sh """
+        sh script: """
         containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
         [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f $dockerRegistry/$dockerImageName || exit 0
         """, returnStatus: true
