@@ -19,6 +19,12 @@ def call(body) {
   def jobDockerSourceRelativePath = params.DOCKER_SOURCE_REL_PATH
   def jobDockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
 
+  def is_main_branch(){
+    return params.BRANCH == "origin/develop" &&
+    params.BRANCH == "origin/stage" &&
+    params.BRANCH == "origin/master"
+  }
+
   stage("unit-tests:"){
     dockerBuilder {
         gitRepoUrl = jobGitRepoUrl
@@ -67,19 +73,20 @@ def call(body) {
     }
   }
 
-  stage("build-image:") {
-    dockerBuilder {
-        gitRepoUrl = jobGitRepoUrl
-        gitCredentialsId = jobGitCredentialsId
-        gitSha  = jobGitSha
+  if is_main_branch() {
+    stage("build-image:") {
+      dockerBuilder {
+          gitRepoUrl = jobGitRepoUrl
+          gitCredentialsId = jobGitCredentialsId
+          gitSha  = jobGitSha
 
-        dockerImageName = jobDockerImageName
-        dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-        slackChannelName = jobSlackChannelName
+          dockerImageName = jobDockerImageName
+          dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          slackChannelName = jobSlackChannelName
 
-        dockerSourceRelativePath = jobDockerSourceRelativePath
+          dockerSourceRelativePath = jobDockerSourceRelativePath
+      }
     }
   }
-
 
 }
