@@ -14,66 +14,70 @@ def call(body) {
   def jobGitRepoUrl = params.GIT_REPO_URL
   def jobGitCredentialsId = params.GIT_CREDENTIALS_ID
   def jobGitSha = params.BRANCH
+  def jobDockerImageName = params.DOCKER_IMAGE_NAME
+  def jobSlackChannelName = params.SLACK_CHANNEL_NAME
+  def jobDockerSourceRelativePath = params.DOCKER_SOURCE_REL_PATH
+  def jobDockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
 
-  stage("unit-tests"){
+  stage("unit-tests:"){
     dockerBuilder {
-        gitRepoUrl = "git@github.com:wizeline/wz-statuspage.git"
-        gitCredentialsId = 'b9abf261-0552-45f2-972d-08f3800d3d4f'
-        gitSha  = "develop"
+        gitRepoUrl = jobGitRepoUrl
+        gitCredentialsId = jobGitCredentialsId
+        gitSha  = jobGitSha
 
-        dockerImageName = "cachet-backend"
-        dockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
-        slackChannelName = 'jenkins'
+        dockerImageName = jobDockerImageName
+        dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+        slackChannelName = jobSlackChannelName
 
         dockerEnvTag = "test"
         dockerDockerfile = "Dockerfile.unit-tests"
         dockerNoTagCheck = "true"
-        dockerSourceRelativePath = "backend"
+        dockerSourceRelativePath = jobDockerSourceRelativePath
     }
 
     dockerRunner {
-      dockerImageName = "cachet-backend"
+      dockerImageName = jobDockerImageName
       dockerImageTag = "test"
-      dockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
-      slackChannelName = 'jenkins'
+      dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+      slackChannelName = jobSlackChannelName
     }
   }
 
-  stage("lint"){
+  stage("lint:"){
     dockerBuilder {
-        gitRepoUrl = "git@github.com:wizeline/wz-statuspage.git"
-        gitCredentialsId = 'b9abf261-0552-45f2-972d-08f3800d3d4f'
-        gitSha  = "develop"
+        gitRepoUrl = jobGitRepoUrl
+        gitCredentialsId = jobGitCredentialsId
+        gitSha  = jobGitSha
 
-        dockerImageName = "cachet-backend"
-        dockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
-        slackChannelName = 'jenkins'
+        dockerImageName = jobDockerImageName
+        dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+        slackChannelName = jobSlackChannelName
 
         dockerEnvTag = "lint"
         dockerDockerfile = "Dockerfile.lint"
         dockerNoTagCheck = "true"
-        dockerSourceRelativePath = "backend"
+        dockerSourceRelativePath = jobDockerSourceRelativePath
     }
 
     dockerRunner {
-      dockerImageName = "cachet-backend"
+      dockerImageName = jobDockerImageName
       dockerImageTag = "lint"
-      dockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
-      slackChannelName = 'jenkins'
+      dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+      slackChannelName = jobSlackChannelName
     }
   }
 
-  stage("build-image") {
+  stage("build-image:") {
     dockerBuilder {
-        gitRepoUrl = "git@github.com:wizeline/wz-statuspage.git"
-        gitCredentialsId = 'b9abf261-0552-45f2-972d-08f3800d3d4f'
-        gitSha  = "develop"
+        gitRepoUrl = jobGitRepoUrl
+        gitCredentialsId = jobGitCredentialsId
+        gitSha  = jobGitSha
 
-        dockerImageName = "cachet-backend"
-        dockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
-        slackChannelName = 'jenkins'
+        dockerImageName = jobDockerImageName
+        dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+        slackChannelName = jobSlackChannelName
 
-        dockerSourceRelativePath = "backend"
+        dockerSourceRelativePath = jobDockerSourceRelativePath
     }
   }
 
