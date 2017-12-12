@@ -11,6 +11,27 @@ def call(body) {
 
   print config
 
+  def gitRepoUrl = params.GIT_REPO_URL
+  def gitCredentialsId = params.GIT_CREDENTIALS_ID
+  def gitSha = params.BRANCH
+
+  deleteDir()
+
+  stage ('Checkout') {
+    git branch: gitSha, url: gitRepoUrl, credentialsId: gitCredentialsId
+    gitBranch = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
+    gitSha = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
+
+    echo "Branch: ${gitBranch}"
+    echo "SHA: ${gitSha}"
+
+    if (config.slackChannelName){
+      slackSend channel:"#${slackChannelName}",
+                color:'good',
+                message:"*START* Build of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER}\n(${env.BUILD_URL})\n *Build started by* :${getuser()}"
+    }
+  }
+
   stage("unit-tests"){
     dockerBuilder {
         gitRepoUrl = "git@github.com:wizeline/wz-statuspage.git"
