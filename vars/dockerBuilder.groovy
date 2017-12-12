@@ -112,10 +112,10 @@ def call(body) {
           """, returnStatus: true
 
           // Ensure every exited container has been removed
-          sh """
+          sh script: """
           containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
           [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f devops.wize.mx:5000/jobs-as-a-service || exit 0
-          """
+          """, returnStatus: true
 
           if (exit_code != 0 && exit_code != 3){
             currentBuild.result = 'FAILURE'
