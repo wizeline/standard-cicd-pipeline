@@ -66,10 +66,12 @@ def call(body) {
         """, returnStatus: true
 
         if (exit_code != 0 && exit_code != 3){
+          echo "FAILURE"
           currentBuild.result = 'FAILURE'
           return
         }
 
+        echo "SUCCESS"
         currentBuild.result = 'SUCCESS'
      }
 

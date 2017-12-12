@@ -75,7 +75,7 @@ def call(body) {
         }
       }
 
-     stage('CDPathDockerBuildRetagPush'){
+     stage('DockerBuildRetagPush'){
 
          withCredentials([[$class: 'UsernamePasswordMultiBinding',
                          credentialsId: dockerRegistryCredentialsId,
@@ -120,15 +120,17 @@ def call(body) {
           """, returnStatus: true
 
           if (exit_code != 0 && exit_code != 3){
+            echo "FAILURE"
             currentBuild.result = 'FAILURE'
             if (config.slackChannelName && !muteSlack){
               slackSend channel:"#${slackChannelName}",
                         color:'danger',
                         message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getuser()}"
             }
-            return
+            return 1
           }
 
+          echo "SUCCESS"
           currentBuild.result = 'SUCCESS'
           if (config.slackChannelName && !muteSlack){
             slackSend channel:"#${slackChannelName}",
