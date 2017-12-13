@@ -1,0 +1,20 @@
+#--------------------------------------------------------------
+# General
+#--------------------------------------------------------------
+
+name        = "docker-daemon"
+region      = "us-east-2"
+
+vpc_id      = "vpc-z"
+vpc_cidr    = "10.0.0.0/16"
+vpc_subnets_ids = ["subnet-1", "subnet-2", "subnet-3"]
+
+project     = ""
+environment = ""
+service     = ""
+customer    = ""
+
+key_name    = ""
+
+acl_master_token = ""
+consul_encrypt = ""
