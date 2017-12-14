@@ -30,7 +30,7 @@ def call(body) {
   def jobDockerSourceRelativePath = params.DOCKER_SOURCE_REL_PATH
   def jobDockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
   def jobGitShaNoOrigin = jobGitSha.replace("origin/", "")
-  def jobDockerDaemonHost = params.DOCKER_DAEMON_HOST ?: 'docker.wize.mx'
+  def jobDockerDaemonHost = params.DOCKER_DAEMON_HOST ?: 'internal-docker.wize.mx'
 
   stage("unit-tests:"){
     dockerBuilder {
