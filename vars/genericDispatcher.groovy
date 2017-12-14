@@ -30,6 +30,7 @@ def call(body) {
   def jobDockerSourceRelativePath = params.DOCKER_SOURCE_REL_PATH
   def jobDockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
   def jobGitShaNoOrigin = jobGitSha.replace("origin/", "")
+  def jobDockerDaemonHost = params.DOCKER_DAEMON_HOST ?: 'docker.wize.mx'
 
   stage("unit-tests:"){
     dockerBuilder {
@@ -45,6 +46,8 @@ def call(body) {
         dockerDockerfile = "Dockerfile.unit-tests"
         dockerNoTagCheck = "true"
         dockerSourceRelativePath = jobDockerSourceRelativePath
+
+        dockerDaemonHost = jobDockerDaemonHost
     }
 
     dockerRunner {
@@ -52,6 +55,8 @@ def call(body) {
       dockerImageTag = "test"
       dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
       slackChannelName = jobSlackChannelName
+
+      dockerDaemonHost = jobDockerDaemonHost
     }
     return_hash["unit-tests"] = "success"
   }
@@ -70,6 +75,8 @@ def call(body) {
         dockerDockerfile = "Dockerfile.lint"
         dockerNoTagCheck = "true"
         dockerSourceRelativePath = jobDockerSourceRelativePath
+
+        dockerDaemonHost = jobDockerDaemonHost
     }
 
     dockerRunner {
@@ -77,6 +84,8 @@ def call(body) {
       dockerImageTag = "lint"
       dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
       slackChannelName = jobSlackChannelName
+
+      dockerDaemonHost = jobDockerDaemonHost
     }
     return_hash["lint"] = "success"
   }
@@ -93,6 +102,8 @@ def call(body) {
           slackChannelName = jobSlackChannelName
 
           dockerSourceRelativePath = jobDockerSourceRelativePath
+
+          dockerDaemonHost = jobDockerDaemonHost
       }
       return_hash["build-image"] = "success"
     }

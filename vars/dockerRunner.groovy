@@ -35,7 +35,7 @@ def call(body) {
   def dockerRegistry = config.dockerRegistry ?: 'devops.wize.mx:5000'
   def dockerImageName = config.dockerImageName
   def dockerImageTag = config.dockerImageTag
-  def dockerDaemonIp
+  def dockerDaemonHost
   def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
   def dockerDaemon
 
@@ -52,10 +52,10 @@ def call(body) {
 
         // Using a load balancer get the ip of a dockerdaemon and keep it for
         // future use.
-        if (!dockerDaemonIp){
-          dockerDaemonIp = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
+        if (!dockerDaemonHost){
+          dockerDaemonHost = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
         }
-        dockerDaemon = "tcp://${dockerDaemonIp}:${dockerDaemonPort}"
+        dockerDaemon = "tcp://${dockerDaemonHost}:${dockerDaemonPort}"
 
         env.DOCKER_TLS_VERIFY = ""
 

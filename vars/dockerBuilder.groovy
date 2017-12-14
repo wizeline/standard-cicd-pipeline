@@ -54,7 +54,7 @@ def call(body) {
   def dockerDockerfileAbsolutePath = config.dockerDockerfileAbsolutePath ?: '/source'
   def dockerDockerfile = config.dockerDockerfile ?: 'Dockerfile'
   def dockerNoTagCheck = config.dockerNoTagCheck ?: 'false'
-  def dockerDaemonIp
+  def dockerDaemonHost
   def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
   def dockerDaemon
 
@@ -90,10 +90,10 @@ def call(body) {
 
           // Using a load balancer get the ip of a dockerdaemon and keep it for
           // future use.
-          if (!dockerDaemonIp){
-            dockerDaemonIp = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
+          if (!dockerDaemonHost){
+            dockerDaemonHost = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
           }
-          dockerDaemon = "tcp://${dockerDaemonIp}:${dockerDaemonPort}"
+          dockerDaemon = "tcp://${dockerDaemonHost}:${dockerDaemonPort}"
 
           env.DOCKER_REGISTRY = dockerRegistry
           env.DOCKER_IMAGE_NAME = dockerImageName
