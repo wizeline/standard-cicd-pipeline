@@ -54,7 +54,7 @@ def call(body) {
   def dockerDockerfileAbsolutePath = config.dockerDockerfileAbsolutePath ?: '/source'
   def dockerDockerfile = config.dockerDockerfile ?: 'Dockerfile'
   def dockerNoTagCheck = config.dockerNoTagCheck ?: 'false'
-  def dockerDaemonHost
+  def dockerDaemonHost= config.dockerDaemonHost
   def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
   def dockerDaemon
 
