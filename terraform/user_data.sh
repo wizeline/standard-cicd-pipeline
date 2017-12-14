@@ -109,10 +109,21 @@ tee /etc/consul/server.json > /dev/null <<EOF
 }
 EOF
 
-
-export CONSUL_SERVICE_HOST=internal-a07f01674e03811e780fb06db98d3788-1860232269.us-east-2.elb.amazonaws.com
-docker run --restart always --network=host -i -v /tmp/consul:/consul/data -v /etc/consul:/etc/consul  consul:1.0.1 agent \
-    -data-dir=/tmp/consul \
-    -retry-join=$CONSUL_SERVICE_HOST \
-    -config-file=/etc/consul/server.json \
-    -node=dockerd-$PRIVATE_IP_HIPHENS
+# # Init a client
+# export CONSUL_SERVICE_HOST=internal-consul-elb.wize.mx
+# docker run --restart always --network=host -i -v /tmp/consul:/consul/data -v /etc/consul:/etc/consul  -d consul:1.0.1 agent \
+#     -data-dir=/tmp/consul \
+#     -retry-join=$CONSUL_SERVICE_HOST \
+#     -config-file=/etc/consul/server.json \
+#     -node=dockerd-$PRIVATE_IP_HIPHENS
+#
+# # Init a server
+# docker run  -ti --net=host -v /etc/consul:/etc/consul consul:1.0.1 agent \
+#    -server \
+#    -ui \
+#    -rejoin \
+#    -advertise=$PRIVATE_IP \
+#    -config-file=/etc/consul/server.json \
+#    -bind=$PRIVATE_IP \
+#    -bootstrap-expect=1 \
+#    -node=consul-4

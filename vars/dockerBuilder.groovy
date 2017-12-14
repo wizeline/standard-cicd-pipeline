@@ -49,10 +49,14 @@ def call(body) {
   def dockerRegistry = config.dockerRegistry ?: 'devops.wize.mx:5000'
   def dockerEnvTag = config.dockerEnvTag ?: 'latest'
   def dockerSourceRelativePath = config.dockerSourceRelativePath ?: '.'
-  def dockerDaemonUrl = config.dockerDaemonUrl ?: 'tcp://internal-docker.wize.mx:4243'
+  // For service discovery only
+  def dockerDaemonUrl = config.dockerDaemonUrl ?: 'internal-docker-daemon-elb.wize.mx'
   def dockerDockerfileAbsolutePath = config.dockerDockerfileAbsolutePath ?: '/source'
   def dockerDockerfile = config.dockerDockerfile ?: 'Dockerfile'
   def dockerNoTagCheck = config.dockerNoTagCheck ?: 'false'
+  def dockerDaemonIp
+  def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
+  def dockerDaemon
 
 
 
@@ -84,6 +88,13 @@ def call(body) {
 
           def workspace = pwd()
 
+          // Using a load balancer get the ip of a dockerdaemon and keep it for
+          // future use.
+          if (!dockerDaemonIp){
+            dockerDaemonIp = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
+          }
+          dockerDaemon = "tcp://${dockerDaemonIp}:${dockerDaemonPort}"
+
           env.DOCKER_REGISTRY = dockerRegistry
           env.DOCKER_IMAGE_NAME = dockerImageName
           env.DOCKER_DOCKERFILE_ABS_PATH = dockerDockerfileAbsolutePath
@@ -92,10 +103,10 @@ def call(body) {
           env.NO_TAG_CHECK = dockerNoTagCheck
           env.DOCKER_COMMIT_TAG = (dockerNoTagCheck == "true") ? dockerEnvTag : gitSha
           env.DOCKER_TLS_VERIFY = ""
-          env.DOCKER_DAEMON_URL = dockerDaemonUrl
+          env.DOCKER_DAEMON_URL = dockerDaemon
 
-          echo "Using remote docker daemon: ${dockerDaemonUrl}"
-          docker_bin="docker -H $dockerDaemonUrl"
+          echo "Using remote docker daemon: ${dockerDaemon}"
+          docker_bin="docker -H $dockerDaemon"
 
           sh "$docker_bin version"
 

@@ -53,12 +53,52 @@ resource "aws_launch_configuration" "dockerds" {
   }
 }
 
+
+resource "aws_elb" "elb1" {
+  name = "${var.name}-elb"
+  subnets = ["${var.vpc_subnets_ids}"]
+  internal = true
+  security_groups = ["${aws_security_group.dockerd.id}"]
+
+  listener {
+    instance_port = 22
+    instance_protocol = "TCP"
+    lb_port = 22
+    lb_protocol = "TCP"
+  }
+
+  listener {
+    instance_port = 4243
+    instance_protocol = "TCP"
+    lb_port = 4243
+    lb_protocol = "TCP"
+  }
+
+  health_check {
+    healthy_threshold = 2
+    unhealthy_threshold = 2
+    timeout = 3
+    target = "TCP:22"
+    interval = 30
+  }
+
+  tags {
+    Name        = "${var.name}"
+    project     = "${var.project}"
+    environment = "${var.environment}"
+    service     = "${var.service}"
+    customer    = "${var.customer}"
+  }
+}
+
 resource "aws_autoscaling_group" "dockerds" {
   name                 = "${var.name}-asg"
   launch_configuration = "${aws_launch_configuration.dockerds.name}"
   vpc_zone_identifier  =  ["${var.vpc_subnets_ids}"]
   min_size             = 2
   max_size             = 2
+
+  load_balancers= ["${aws_elb.elb1.id}"]
 
   lifecycle {
     create_before_destroy = true

@@ -30,10 +30,14 @@ def call(body) {
   muteSlack = (muteSlack == 'true')
 
   def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: ''
-  def dockerDaemonUrl = config.dockerDaemonUrl ?: 'tcp://internal-docker.wize.mx:4243'
+  // For service discovery only
+  def dockerDaemonUrl = config.dockerDaemonUrl ?: 'internal-docker-daemon-elb.wize.mx'
   def dockerRegistry = config.dockerRegistry ?: 'devops.wize.mx:5000'
   def dockerImageName = config.dockerImageName
   def dockerImageTag = config.dockerImageTag
+  def dockerDaemonIp
+  def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
+  def dockerDaemon
 
   node ('devops1'){
 
@@ -46,10 +50,17 @@ def call(body) {
         // Clean workspace before doing anything
         deleteDir()
 
+        // Using a load balancer get the ip of a dockerdaemon and keep it for
+        // future use.
+        if (!dockerDaemonIp){
+          dockerDaemonIp = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
+        }
+        dockerDaemon = "tcp://${dockerDaemonIp}:${dockerDaemonPort}"
+
         env.DOCKER_TLS_VERIFY = ""
 
-        echo "Using remote docker daemon: ${dockerDaemonUrl}"
-        docker_bin="docker -H $dockerDaemonUrl"
+        echo "Using remote docker daemon: ${dockerDaemon}"
+        docker_bin="docker -H $dockerDaemon"
 
         sh "$docker_bin version"
 
