@@ -35,7 +35,7 @@ def call(body) {
   def dockerRegistry = config.dockerRegistry ?: 'devops.wize.mx:5000'
   def dockerImageName = config.dockerImageName
   def dockerImageTag = config.dockerImageTag
-  def dockerDaemonHost
+  def dockerDaemonHost = config.dockerDaemonHost
   def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
   def dockerDaemon
 
