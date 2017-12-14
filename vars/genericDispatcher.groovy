@@ -12,6 +12,7 @@ def is_main_branch(){
 def call(body) {
 
   def config = [:]
+  def return_hash = [:]
 
   if (body) {
     body.resolveStrategy = Closure.DELEGATE_FIRST
@@ -52,6 +53,7 @@ def call(body) {
       dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
       slackChannelName = jobSlackChannelName
     }
+    return_hash["unit-tests"] = "success"
   }
 
   stage("lint:"){
@@ -76,6 +78,7 @@ def call(body) {
       dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
       slackChannelName = jobSlackChannelName
     }
+    return_hash["lint"] = "success"
   }
 
   if (is_main_branch()) {
@@ -91,7 +94,10 @@ def call(body) {
 
           dockerSourceRelativePath = jobDockerSourceRelativePath
       }
+      return_hash["build-image"] = "success"
     }
   }
+
+  return return_hash
 
 }
