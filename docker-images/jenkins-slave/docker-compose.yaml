@@ -1,0 +1,6 @@
+version: '3'
+
+services:
+  jenkins-slave:
+    image: devops.wize.mx:5000/jenkins-slave
+    build: .

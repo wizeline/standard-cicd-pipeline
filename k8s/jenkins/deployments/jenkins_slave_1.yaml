@@ -10,9 +10,12 @@ spec:
       labels:
         app: jenkins-slave-1
     spec:
+      imagePullSecrets:
+      - name: wizehub
       containers:
       - name: jenkins-slave-1
-        image: jenkinsci/jnlp-slave
+        image: devops.wize.mx:5000/jenkins-slave
+        imagePullPolicy: Always
         args:
           - "-url"
           - "http://$(JENKINS_DISCOVERY_SERVICE_HOST):$(JENKINS_UI_INTERNAL_SERVICE_PORT)"

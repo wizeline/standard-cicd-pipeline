@@ -58,9 +58,12 @@ def call(body) {
   def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
   def dockerDaemon
 
+  def jenkinsNode = config.jenkinsNode
 
 
-  node ('devops1'){
+
+  node (jenkinsNode){
+    try{
       // Clean workspace before doing anything
       deleteDir()
 
@@ -151,6 +154,15 @@ def call(body) {
                       message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getuser()}"
           }
          }
+     }
+     } catch (err) {
+       println err
+       if (config.slackChannelName && !muteSlack){
+         slackSend channel:"#${slackChannelName}",
+                   color:'danger',
+                   message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getuser()}"
+       }
+       throw err
      }
 
    }

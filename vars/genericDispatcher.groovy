@@ -28,9 +28,26 @@ def call(body) {
   def jobDockerImageName = params.DOCKER_IMAGE_NAME
   def jobSlackChannelName = params.SLACK_CHANNEL_NAME
   def jobDockerSourceRelativePath = params.DOCKER_SOURCE_REL_PATH
-  def jobDockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
+  def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
   def jobGitShaNoOrigin = jobGitSha.replace("origin/", "")
-  def jobDockerDaemonHost = params.DOCKER_DAEMON_HOST ?: 'internal-docker.wize.mx'
+  def jobDockerDaemonHost = config.jobDockerDaemonHost
+
+  def jobGitBranch
+  def jobGitShaCommit
+
+  node {
+    stage ('Checkout') {
+      git branch: jobGitShaNoOrigin, url: jobGitRepoUrl, credentialsId: jobGitCredentialsId
+      jobGitBranch = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
+      jobGitShaCommit = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
+
+      return_hash["git-branch"] = jobGitBranch
+      return_hash["git-sha"] = jobGitShaCommit
+
+      echo "Branch: ${jobGitBranch}"
+      echo "SHA: ${jobGitShaCommit}"
+    }
+  }
 
   stage("unit-tests:"){
     dockerBuilder {
@@ -47,6 +64,9 @@ def call(body) {
         dockerNoTagCheck = "true"
         dockerSourceRelativePath = jobDockerSourceRelativePath
 
+        // dockerDaemonUrl vs dockerDaemonHost
+        // dockerDaemonUrl: will select a dockerd from a elb
+        // dockerDaemonHost: uses specific dockerd
         dockerDaemonHost = jobDockerDaemonHost
     }
 
