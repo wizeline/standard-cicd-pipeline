@@ -37,7 +37,7 @@ def call(body) {
 
   node {
     stage ('Checkout') {
-      git branch: jobGitSha, url: jobGitRepoUrl, credentialsId: jobGitCredentialsId
+      git branch: jobGitShaNoOrigin, url: jobGitRepoUrl, credentialsId: jobGitCredentialsId
       jobGitBranch = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
       jobGitShaCommit = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
 
