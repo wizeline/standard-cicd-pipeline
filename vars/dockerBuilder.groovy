@@ -58,9 +58,11 @@ def call(body) {
   def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
   def dockerDaemon
 
+  def jenkinsNode = config.jenkinsNode
 
 
-  node ('devops1'){
+
+  node (jenkinsNode){
       // Clean workspace before doing anything
       deleteDir()
 

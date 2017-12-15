@@ -39,7 +39,9 @@ def call(body) {
   def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
   def dockerDaemon
 
-  node ('devops1'){
+  def jenkinsNode = config.jenkinsNode
+
+  node (jenkinsNode){
 
     stage('RunContainer'){
 
