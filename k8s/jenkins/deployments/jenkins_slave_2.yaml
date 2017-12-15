@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins-slave-2
+  namespace: jenkins
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jenkins-slave-2
+    spec:
+      containers:
+      - name: jenkins-slave-2
+        image: jenkinsci/jnlp-slave:2.60
+        args:
+          - "-url"
+          - "http://$(JENKINS_DISCOVERY_SERVICE_HOST):$(JENKINS_UI_INTERNAL_SERVICE_PORT)"
+          - "$(JENKINS_SECRET)"
+          - "$(JENKINS_AGENT_NAME)"
+        env:
+          - name: JENKINS_SECRET
+            value: 77a16b50be44d2b633243321359e253c5a9ce8045cd21e72b901e31707111852
+          - name: JENKINS_AGENT_NAME
+            value: slave-2
