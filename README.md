@@ -30,3 +30,8 @@ IPs from here to connect to a cluster instance.
 # Vars
 
 Shared Library for jenkins standar pipelines.
+
+
+# Architecture Diagram for jenkins-dockerds
+
+![jenkins-dockerds-architecture](docs/jenkins-ci-docker-arch.png)
