@@ -24,11 +24,20 @@ def call(body) {
     error 'You must provide a dockerRegistryCredentialsId'
   }
 
+  def slackChannelName = config.slackChannelName ?: 'jenkins'
+  def slackToken = config.slackToken
+  def muteSlack = config.muteSlack ?: 'false'
+  muteSlack = (muteSlack == 'true')
+
   def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: ''
-  def dockerDaemonUrl = config.dockerDaemonUrl ?: 'tcp://internal-docker.wize.mx:4243'
+  // For service discovery only
+  def dockerDaemonUrl = config.dockerDaemonUrl ?: 'internal-docker-daemon-elb.wize.mx'
   def dockerRegistry = config.dockerRegistry ?: 'devops.wize.mx:5000'
   def dockerImageName = config.dockerImageName
   def dockerImageTag = config.dockerImageTag
+  def dockerDaemonHost = config.dockerDaemonHost
+  def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
+  def dockerDaemon
 
   node ('devops1'){
 
@@ -41,10 +50,17 @@ def call(body) {
         // Clean workspace before doing anything
         deleteDir()
 
+        // Using a load balancer get the ip of a dockerdaemon and keep it for
+        // future use.
+        if (!dockerDaemonHost){
+          dockerDaemonHost = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
+        }
+        dockerDaemon = "tcp://${dockerDaemonHost}:${dockerDaemonPort}"
+
         env.DOCKER_TLS_VERIFY = ""
 
-        echo "Using remote docker daemon: ${dockerDaemonUrl}"
-        docker_bin="docker -H $dockerDaemonUrl"
+        echo "Using remote docker daemon: ${dockerDaemon}"
+        docker_bin="docker -H $dockerDaemon"
 
         sh "$docker_bin version"
 
@@ -69,12 +85,22 @@ def call(body) {
         if (exit_code != 0 && exit_code != 3){
           echo "FAILURE"
           currentBuild.result = 'FAILURE'
+          if (config.slackChannelName && !muteSlack){
+            slackSend channel:"#${slackChannelName}",
+                      color:'danger',
+                      message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
+          }
           error("FAILURE - Run container returned non 0 exit code")
           return 1
         }
 
         echo "SUCCESS"
         currentBuild.result = 'SUCCESS'
+        if (config.slackChannelName && !muteSlack){
+          slackSend channel:"#${slackChannelName}",
+                    color:'good',
+                    message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
+        }
      }
 
    }}

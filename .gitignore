@@ -1,0 +1,5 @@
+terraform.tfvars
+.terraform
+terraform.tfstate.backup
+k8s/jenkins/deployments/options
+secret.*

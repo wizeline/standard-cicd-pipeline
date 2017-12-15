@@ -1,7 +1,18 @@
 //#!Groovy
+
+def is_main_branch(){
+  return params.BRANCH == "origin/develop" ||
+  params.BRANCH == "origin/stage" ||
+  params.BRANCH == "origin/master" ||
+  params.BRANCH == "develop" ||
+  params.BRANCH == "stage" ||
+  params.BRANCH == "master"
+}
+
 def call(body) {
 
   def config = [:]
+  def return_hash = [:]
 
   if (body) {
     body.resolveStrategy = Closure.DELEGATE_FIRST
@@ -18,12 +29,14 @@ def call(body) {
   def jobSlackChannelName = params.SLACK_CHANNEL_NAME
   def jobDockerSourceRelativePath = params.DOCKER_SOURCE_REL_PATH
   def jobDockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
+  def jobGitShaNoOrigin = jobGitSha.replace("origin/", "")
+  def jobDockerDaemonHost = params.DOCKER_DAEMON_HOST ?: 'internal-docker.wize.mx'
 
   stage("unit-tests:"){
     dockerBuilder {
         gitRepoUrl = jobGitRepoUrl
         gitCredentialsId = jobGitCredentialsId
-        gitSha  = jobGitSha
+        gitSha  = jobGitShaNoOrigin
 
         dockerImageName = jobDockerImageName
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
@@ -33,6 +46,8 @@ def call(body) {
         dockerDockerfile = "Dockerfile.unit-tests"
         dockerNoTagCheck = "true"
         dockerSourceRelativePath = jobDockerSourceRelativePath
+
+        dockerDaemonHost = jobDockerDaemonHost
     }
 
     dockerRunner {
@@ -40,14 +55,17 @@ def call(body) {
       dockerImageTag = "test"
       dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
       slackChannelName = jobSlackChannelName
+
+      dockerDaemonHost = jobDockerDaemonHost
     }
+    return_hash["unit-tests"] = "success"
   }
 
   stage("lint:"){
     dockerBuilder {
         gitRepoUrl = jobGitRepoUrl
         gitCredentialsId = jobGitCredentialsId
-        gitSha  = jobGitSha
+        gitSha  = jobGitShaNoOrigin
 
         dockerImageName = jobDockerImageName
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
@@ -57,6 +75,8 @@ def call(body) {
         dockerDockerfile = "Dockerfile.lint"
         dockerNoTagCheck = "true"
         dockerSourceRelativePath = jobDockerSourceRelativePath
+
+        dockerDaemonHost = jobDockerDaemonHost
     }
 
     dockerRunner {
@@ -64,22 +84,31 @@ def call(body) {
       dockerImageTag = "lint"
       dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
       slackChannelName = jobSlackChannelName
+
+      dockerDaemonHost = jobDockerDaemonHost
+    }
+    return_hash["lint"] = "success"
+  }
+
+  if (is_main_branch()) {
+    stage("build-image:") {
+      dockerBuilder {
+          gitRepoUrl = jobGitRepoUrl
+          gitCredentialsId = jobGitCredentialsId
+          gitSha  = jobGitShaNoOrigin
+
+          dockerImageName = jobDockerImageName
+          dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          slackChannelName = jobSlackChannelName
+
+          dockerSourceRelativePath = jobDockerSourceRelativePath
+
+          dockerDaemonHost = jobDockerDaemonHost
+      }
+      return_hash["build-image"] = "success"
     }
   }
 
-  stage("build-image:") {
-    dockerBuilder {
-        gitRepoUrl = jobGitRepoUrl
-        gitCredentialsId = jobGitCredentialsId
-        gitSha  = jobGitSha
-
-        dockerImageName = jobDockerImageName
-        dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-        slackChannelName = jobSlackChannelName
-
-        dockerSourceRelativePath = jobDockerSourceRelativePath
-    }
-  }
-
+  return return_hash
 
 }
