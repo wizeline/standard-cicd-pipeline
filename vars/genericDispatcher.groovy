@@ -35,16 +35,18 @@ def call(body) {
   def jobGitBranch
   def jobGitShaCommit
 
-  stage ('Checkout') {
-    git branch: jobGitSha, url: jobGitRepoUrl, credentialsId: jobGitCredentialsId
-    jobGitBranch = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
-    jobGitShaCommit = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
+  node {
+    stage ('Checkout') {
+      git branch: jobGitSha, url: jobGitRepoUrl, credentialsId: jobGitCredentialsId
+      jobGitBranch = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
+      jobGitShaCommit = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
 
-    return_hash["git-branch"] = jobGitBranch
-    return_hash["git-sha"] = jobGitShaCommit
+      return_hash["git-branch"] = jobGitBranch
+      return_hash["git-sha"] = jobGitShaCommit
 
-    echo "Branch: ${jobGitBranch}"
-    echo "SHA: ${jobGitShaCommit}"
+      echo "Branch: ${jobGitBranch}"
+      echo "SHA: ${jobGitShaCommit}"
+    }
   }
 
   stage("unit-tests:"){
