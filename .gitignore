@@ -3,3 +3,4 @@ terraform.tfvars
 terraform.tfstate.backup
 k8s/jenkins/deployments/options
 secret.*
+.DS_Store
