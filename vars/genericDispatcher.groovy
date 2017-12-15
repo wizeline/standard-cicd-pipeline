@@ -32,6 +32,21 @@ def call(body) {
   def jobGitShaNoOrigin = jobGitSha.replace("origin/", "")
   def jobDockerDaemonHost = config.jobDockerDaemonHost
 
+  def jobGitBranch
+  def jobGitSha
+
+  stage ('Checkout') {
+    git branch: jobGitSha, url: jobGitRepoUrl, credentialsId: jobGitCredentialsId
+    jobGitBranch = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
+    jobGitSha = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
+
+    return_hash["git-branch"] = jobGitBranch
+    return_hash["git-sha"] = jobGitSha
+
+    echo "Branch: ${jobGitBranch}"
+    echo "SHA: ${jobGitSha}"
+  }
+
   stage("unit-tests:"){
     dockerBuilder {
         gitRepoUrl = jobGitRepoUrl
