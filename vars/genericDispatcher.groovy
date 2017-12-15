@@ -31,6 +31,7 @@ def call(body) {
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
   def jobGitShaNoOrigin = jobGitSha.replace("origin/", "")
   def jobDockerDaemonHost = config.jobDockerDaemonHost
+  def jobJenkinsNode = config.jobJenkinsNode
 
   def jobGitBranch
   def jobGitShaCommit
@@ -68,6 +69,7 @@ def call(body) {
         // dockerDaemonUrl: will select a dockerd from a elb
         // dockerDaemonHost: uses specific dockerd
         dockerDaemonHost = jobDockerDaemonHost
+        jenkinsNode = jobJenkinsNode
     }
 
     dockerRunner {
@@ -77,6 +79,7 @@ def call(body) {
       slackChannelName = jobSlackChannelName
 
       dockerDaemonHost = jobDockerDaemonHost
+      jenkinsNode = jobJenkinsNode
     }
     return_hash["unit-tests"] = "success"
   }
@@ -97,6 +100,7 @@ def call(body) {
         dockerSourceRelativePath = jobDockerSourceRelativePath
 
         dockerDaemonHost = jobDockerDaemonHost
+        jenkinsNode = jobJenkinsNode
     }
 
     dockerRunner {
@@ -106,6 +110,7 @@ def call(body) {
       slackChannelName = jobSlackChannelName
 
       dockerDaemonHost = jobDockerDaemonHost
+      jenkinsNode = jobJenkinsNode
     }
     return_hash["lint"] = "success"
   }
@@ -124,6 +129,7 @@ def call(body) {
           dockerSourceRelativePath = jobDockerSourceRelativePath
 
           dockerDaemonHost = jobDockerDaemonHost
+          jenkinsNode = jobJenkinsNode
       }
       return_hash["build-image"] = "success"
     }
