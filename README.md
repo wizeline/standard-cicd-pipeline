@@ -31,6 +31,10 @@ IPs from here to connect to a cluster instance.
 
 Shared Library for jenkins standar pipelines.
 
+# CI CD Pipeline modules
+
+![cicd-pipelines-modules](docs/cicd-pipelines.png)
+
 
 # Architecture Diagram for jenkins-dockerds
 
