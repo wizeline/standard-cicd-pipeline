@@ -29,7 +29,7 @@ def call(body) {
   def jobSlackChannelName = params.SLACK_CHANNEL_NAME
   def jobDockerSourceRelativePath = params.DOCKER_SOURCE_REL_PATH
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
-  def jobGitShaNoOrigin = jobGitSha.replace("origin/", "")
+  def jobGitShaNoOrigin = jobGitSha//.replace("origin/", "")
   def jobDockerDaemonHost = config.jobDockerDaemonHost
   def jobJenkinsNode = config.jobJenkinsNode
 
