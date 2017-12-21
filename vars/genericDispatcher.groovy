@@ -59,7 +59,7 @@ def call(body) {
     dockerBuilder {
         gitRepoUrl = jobGitRepoUrl
         gitCredentialsId = jobGitCredentialsId
-        gitSha  = jobGitShaNoOrigin
+        gitSha  = jobGitShaCommit
 
         dockerImageName = jobDockerImageName
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
@@ -93,7 +93,7 @@ def call(body) {
     dockerBuilder {
         gitRepoUrl = jobGitRepoUrl
         gitCredentialsId = jobGitCredentialsId
-        gitSha  = jobGitShaNoOrigin
+        gitSha  = jobGitShaCommit
 
         dockerImageName = jobDockerImageName
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
@@ -125,7 +125,7 @@ def call(body) {
       dockerBuilder {
           gitRepoUrl = jobGitRepoUrl
           gitCredentialsId = jobGitCredentialsId
-          gitSha  = jobGitShaNoOrigin
+          gitSha  = jobGitShaCommit
 
           dockerImageName = jobDockerImageName
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
