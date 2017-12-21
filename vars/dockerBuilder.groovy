@@ -73,7 +73,7 @@ def call(body) {
         // gitSha = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
 
         git_info = gitCheckout {
-          branch = jobGitShaNoOrigin
+          branch = gitSha
           gitCredentialsId = jobGitCredentialsId
           gitRepoUrl = jobGitRepoUrl
         }
