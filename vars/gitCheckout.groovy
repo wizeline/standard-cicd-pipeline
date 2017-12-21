@@ -22,8 +22,8 @@ def call(body) {
             userRemoteConfigs: [
               [
                 refspec: '+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pr/*',
-                credentialsId: config.gitCredentialsId,
-                url: config.gitRepoUrl]
+                credentialsId: config.credentialsId,
+                url: config.repoUrl]
             ]
         ])
 

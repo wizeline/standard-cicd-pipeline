@@ -74,8 +74,8 @@ def call(body) {
 
         git_info = gitCheckout {
           branch = gitSha
-          gitCredentialsId = jobGitCredentialsId
-          gitRepoUrl = jobGitRepoUrl
+          credentialsId = gitCredentialsId
+          repoUrl = gitRepoUrl
         }
         gitBranch = git_info["git-branch"]
         gitSha = git_info["git-commit-sha"]

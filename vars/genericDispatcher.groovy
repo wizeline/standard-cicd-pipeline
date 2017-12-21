@@ -41,8 +41,8 @@ def call(body) {
       //git branch: jobGitShaNoOrigin, url: jobGitRepoUrl, credentialsId: jobGitCredentialsId
       git_info = gitCheckout {
         branch = jobGitShaNoOrigin
-        gitCredentialsId = jobGitCredentialsId
-        gitRepoUrl = jobGitRepoUrl
+        credentialsId = jobGitCredentialsId
+        repoUrl = jobGitRepoUrl
       }
       jobGitBranch = git_info["git-branch"]
       jobGitShaCommit = git_info["git-commit-sha"]
