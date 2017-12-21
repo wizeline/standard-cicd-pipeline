@@ -29,7 +29,7 @@ def call(body) {
   def jobSlackChannelName = params.SLACK_CHANNEL_NAME
   def jobDockerSourceRelativePath = params.DOCKER_SOURCE_REL_PATH
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
-  def jobGitShaNoOrigin = jobGitSha.replace("origin/", "")
+  def jobGitShaNoOrigin = jobGitSha//.replace("origin/", "")
   def jobDockerDaemonHost = config.jobDockerDaemonHost
   def jobJenkinsNode = config.jobJenkinsNode
 
@@ -38,9 +38,14 @@ def call(body) {
 
   node {
     stage ('Checkout') {
-      git branch: jobGitShaNoOrigin, url: jobGitRepoUrl, credentialsId: jobGitCredentialsId
-      jobGitBranch = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
-      jobGitShaCommit = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
+      //git branch: jobGitShaNoOrigin, url: jobGitRepoUrl, credentialsId: jobGitCredentialsId
+      git_info = gitCheckout {
+        branch = jobGitShaNoOrigin
+        credentialsId = jobGitCredentialsId
+        repoUrl = jobGitRepoUrl
+      }
+      jobGitBranch = git_info["git-branch"]
+      jobGitShaCommit = git_info["git-commit-sha"]
 
       return_hash["git-branch"] = jobGitBranch
       return_hash["git-sha"] = jobGitShaCommit
@@ -54,7 +59,7 @@ def call(body) {
     dockerBuilder {
         gitRepoUrl = jobGitRepoUrl
         gitCredentialsId = jobGitCredentialsId
-        gitSha  = jobGitShaNoOrigin
+        gitSha  = jobGitShaCommit
 
         dockerImageName = jobDockerImageName
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
@@ -88,7 +93,7 @@ def call(body) {
     dockerBuilder {
         gitRepoUrl = jobGitRepoUrl
         gitCredentialsId = jobGitCredentialsId
-        gitSha  = jobGitShaNoOrigin
+        gitSha  = jobGitShaCommit
 
         dockerImageName = jobDockerImageName
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
@@ -120,7 +125,7 @@ def call(body) {
       dockerBuilder {
           gitRepoUrl = jobGitRepoUrl
           gitCredentialsId = jobGitCredentialsId
-          gitSha  = jobGitShaNoOrigin
+          gitSha  = jobGitShaCommit
 
           dockerImageName = jobDockerImageName
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
