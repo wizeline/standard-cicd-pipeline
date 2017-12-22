@@ -12,8 +12,7 @@ def call(body) {
   echo "gitCheckout.groovy"
   print config
 
-  def disableSubmodules = config.disableSubmodules ?: 'true'
-  disableSubmodules = (disableSubmodules == 'true')
+  def disableSubmodules = (config.disableSubmodules == "true") ? true : false
   println "disableSubmodules: ${disableSubmodules}"
 
   checkout([$class: 'GitSCM',

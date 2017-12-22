@@ -60,8 +60,8 @@ def call(body) {
 
   def jenkinsNode = config.jenkinsNode
 
-  def jobDisableSubmodules = config.disableSubmodules ?: 'true'
-  jobDisableSubmodules = (jobDisableSubmodules == 'true')
+  def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
+  println "disableSubmodules: ${jobDisableSubmodules}"
 
 
 
