@@ -11,6 +11,7 @@ def call(body) {
 
   def disableSubmodules = config.disableSubmodules ?: 'true'
   disableSubmodules = (disableSubmodules == 'true')
+  println "disableSubmodules: ${disableSubmodules}"
 
   checkout([$class: 'GitSCM',
             branches: [[name: config.branch]],
