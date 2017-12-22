@@ -33,6 +33,8 @@ def call(body) {
             ]
         ])
 
+  sh "ls -la"
+
   return_hash = [:]
   return_hash["git-branch"] = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
   return_hash["git-commit-sha"] = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
