@@ -9,11 +9,14 @@ def call(body) {
     body()
   }
 
+  def disableSubmodules = config.disableSubmodules ?: 'true'
+  disableSubmodules = (disableSubmodules == 'true')
+
   checkout([$class: 'GitSCM',
             branches: [[name: config.branch]],
             doGenerateSubmoduleConfigurations: true,
             extensions: [[$class: 'SubmoduleOption',
-                          disableSubmodules: true,
+                          disableSubmodules: disableSubmodules,
                           parentCredentials: true,
                           recursiveSubmodules: true,
                           reference: '',

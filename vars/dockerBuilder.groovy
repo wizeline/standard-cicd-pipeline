@@ -60,6 +60,9 @@ def call(body) {
 
   def jenkinsNode = config.jenkinsNode
 
+  def jobDisableSubmodules = config.disableSubmodules ?: 'true'
+  jobDisableSubmodules = (jobDisableSubmodules == 'true')
+
 
 
   node (jenkinsNode){
@@ -76,6 +79,7 @@ def call(body) {
           branch = gitSha
           credentialsId = gitCredentialsId
           repoUrl = gitRepoUrl
+          disableSubmodules =
         }
         gitBranch = git_info["git-branch"]
         gitSha = git_info["git-commit-sha"]
