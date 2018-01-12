@@ -108,7 +108,9 @@ def call(body) {
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
 
+        println config.tfClosure
         if (config.tfClosure) {
+          echo "tfClosure"
           config.tfClosure()
         }
 
