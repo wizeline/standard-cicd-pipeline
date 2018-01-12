@@ -29,7 +29,7 @@ def callTerraform(_cmd, tf_configs) {
   }
 }
 
-def plan_apply(tf_configs) {
+def plan_apply(tf_configs, slack_i) {
   def exit_code = 1
   def apply = false
 
@@ -39,11 +39,13 @@ def plan_apply(tf_configs) {
     exit_code = callTerraform("/plan.sh", tf_configs)
 
     if (exit_code == 0){
+      slack_i.send('good', "*SUCCESS* Plan 0 - Succeeded, diff is empty (no changes) (terraformControl)")
       echo "SUCCESS"
       currentBuild.result = 'SUCCESS'
       return
     }
     if (exit_code != 0 && exit_code != 2){
+      slack_i.send('danger', "*FAILURE* Plan 1 - Errored (terraformControl)")
       echo "FAILURE"
       currentBuild.result = 'FAILURE'
       return
@@ -51,10 +53,12 @@ def plan_apply(tf_configs) {
 
 
     if (exit_code == 2){
+      slack_i.send('good', "Plan *Apply Awaiting Approval*. 2 - Succeeded, there is a diff (terraformControl)")
       try {
         input message: 'Apply Plan?', ok: 'Apply'
         apply = true
       } catch (err) {
+        slack_i.send('warning', "*Plan Discarded* (terraformControl)")
         apply = false
         currentBuild.result = 'UNSTABLE'
       }
@@ -66,9 +70,11 @@ def plan_apply(tf_configs) {
       exit_code = callTerraform("/apply.sh", tf_configs)
 
       if (exit_code == 0) {
+        slack_i.send('good', "*SUCCESS* Changes Applied (terraformControl)")
         echo "SUCCESS"
         currentBuild.result = 'SUCCESS'
       } else {
+        slack_i.send('danger', "*FAILURE* Apply Failed (terraformControl)")
         echo "FAILURE"
         currentBuild.result = 'FAILURE'
       }
@@ -76,7 +82,7 @@ def plan_apply(tf_configs) {
   }
 }
 
-def plan_destroy(tf_configs) {
+def plan_destroy(tf_configs, slack_i) {
   def exit_code = 1
   def apply = false
 
@@ -86,20 +92,24 @@ def plan_destroy(tf_configs) {
     exit_code = callTerraform("/plan_destroy.sh", tf_configs)
 
     if (exit_code == 0){
+      slack_i.send('good', "*SUCCESS* Plan 0 - Succeeded, diff is empty (no changes) (terraformControl)")
       echo "SUCCESS"
       currentBuild.result = 'SUCCESS'
       return
     }
     if (exit_code != 0 && exit_code != 2){
+      slack_i.send('danger', "*FAILURE* Plan 1 - Errored (terraformControl)")
       echo "FAILURE"
       currentBuild.result = 'FAILURE'
       return
     }
     if (exit_code == 2){
+      slack_i.send('good', "Plan *Destroy Awaiting Approval*. 2 - Succeeded, there is a diff (terraformControl)")
       try {
         input message: 'Destroy?', ok: 'Destroy'
         apply = true
       } catch (err) {
+        slack_i.send('warning', "*Plan Discarded* (terraformControl)")
         apply = false
         currentBuild.result = 'UNSTABLE'
       }
@@ -111,9 +121,11 @@ def plan_destroy(tf_configs) {
       exit_code = callTerraform("/destroy.sh", tf_configs)
 
       if (exit_code == 0) {
+        slack_i.send('good', "*SUCCESS* Destroy Applied (terraformControl)")
         echo "SUCCESS"
         currentBuild.result = 'SUCCESS'
       } else {
+        slack_i.send('danger', "*FAILURE* Destroy Failed (terraformControl)")
         echo "FAILURE"
         currentBuild.result = 'FAILURE'
       }
@@ -121,10 +133,56 @@ def plan_destroy(tf_configs) {
   }
 }
 
+def slack_wrap(color, message, slack_configs){
+  def sufix = "\n${slack_configs.git_sha}:${slack_configs.job_name} - ${slack_configs.build_url}\n(${slack_configs.build_url})\n*Build started by* :${slack_configs.build_user}"
+
+  slackSend channel: "#${slack_configs.slackChannelName}",
+            color: color,
+            message: "${message}${sufix}"
+}
+
+class SlackI {
+    public String slackChannelName
+    public String slackToken
+    public String muteSlack
+    public String git_sha
+    public String job_name
+    public String build_number
+    public String build_url
+    public String build_user
+    public String sufix
+
+    SlackI(config) {
+        this.slackChannelName = config.slackChannelName ?: 'jenkins'
+        this.slackToken = config.slackToken
+
+        this.muteSlack = config.muteSlack ?: 'false'
+        this.muteSlack = (muteSlack == 'true')
+
+        this.git_sha = params.GIT_SHA
+        this.job_name = env.JOB_NAME
+        this.build_number = env.BUILD_NUMBER
+        this.build_url = env.BUILD_URL
+        this.build_user = getuser()
+
+        this.sufix = "\n${slack_configs.git_sha}:${slack_configs.job_name} - ${slack_configs.build_url}\n(${slack_configs.build_url})\n*Build started by* :${slack_configs.build_user}"
+    }
+
+    def send(color, message){
+      if (this.slackChannelName && !this.muteSlack) {
+        slackSend channel: "#${this.slackChannelName}",
+                  color: color,
+                  message: "${message}${this.sufix}"
+      }
+    }
+}
+
 def call(body) {
 
   def config = [:]
   def tf_configs = [:]
+  def slack_configs = [:]
+  def slack_i
   def return_hash = [:]
 
   if (body) {
@@ -135,10 +193,7 @@ def call(body) {
 
   print config
 
-  def slackChannelName = config.slackChannelName ?: 'jenkins'
-  def slackToken = config.slackToken
-  def muteSlack = config.muteSlack ?: 'false'
-  muteSlack = (muteSlack == 'true')
+  slack_i = SlackI(config)
 
   tf_configs.gitRepoUrl = params.GIT_REPO_URL
   tf_configs.gitCredentialsId = params.GIT_CREDENTIALS_ID
@@ -158,13 +213,15 @@ def call(body) {
 
   tf_configs.tfVars = config.jobTfVars
 
+  slack_i.send('good', "*START* ${params.TERRAFORM_COMMAND} (terraformControl)")
+
   if (params.TERRAFORM_COMMAND == "PLAN_APPLY"){
-    plan_apply(tf_configs)
+    plan_apply(tf_configs, slack_i)
     return
   }
 
   if (params.TERRAFORM_COMMAND == "PLAN_DESTROY"){
-    plan_destroy(tf_configs)
+    plan_destroy(tf_configs, slack_i)
     return
   }
 
