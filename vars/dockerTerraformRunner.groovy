@@ -111,7 +111,7 @@ def call(body) {
         println config.tfVars
         if (config.tfVars) {
           sh """
-          cat <<EOF >> $tfSourceRelativePath/terraform.tfvars
+          cat <<EOF > $tfSourceRelativePath/terraform.tfvars
           ${config.tfVars}
           EOF
           """
