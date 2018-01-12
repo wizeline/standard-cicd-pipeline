@@ -156,7 +156,7 @@ class SlackI {
         this.slackChannelName = config.slackChannelName ?: 'jenkins'
         this.slackToken = config.slackToken
 
-        tmpMuteSlack = config.muteSlack ?: 'false'
+        def tmpMuteSlack = config.muteSlack ?: 'false'
         this.muteSlack = (tmpMuteSlack == 'true')
 
         this.git_sha = params.GIT_SHA
