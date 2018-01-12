@@ -152,7 +152,7 @@ class SlackI {
     public String build_user
     public String sufix
 
-    SlackI(config) {
+    SlackI(config, params, env) {
         this.slackChannelName = config.slackChannelName ?: 'jenkins'
         this.slackToken = config.slackToken
 
@@ -193,7 +193,7 @@ def call(body) {
 
   print config
 
-  slack_i = new SlackI(config)
+  slack_i = new SlackI(config, params, env)
 
   tf_configs.gitRepoUrl = params.GIT_REPO_URL
   tf_configs.gitCredentialsId = params.GIT_CREDENTIALS_ID
