@@ -113,7 +113,7 @@ def call(body) {
           sh """
           cat <<EOF > $tfSourceRelativePath/terraform.tfvars
           ${config.tfVars}
-          EOF"""
+EOF"""
         }
 
         if (config.slackChannelName && !muteSlack){
