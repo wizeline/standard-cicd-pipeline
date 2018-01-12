@@ -144,7 +144,7 @@ def slack_wrap(color, message, slack_configs){
 class SlackI {
     public String slackChannelName
     public String slackToken
-    public Boolean muteSlack
+    public boolean muteSlack
     public String git_sha
     public String job_name
     public String build_number
