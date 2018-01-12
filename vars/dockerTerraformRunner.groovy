@@ -108,15 +108,13 @@ def call(body) {
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
 
-        // Call the script closure
-        // config.tfClosure.delegate = this
-        // config.tfClosure.resolveStrategy = Closure.DELEGATE_FIRST
-        // def result = config.tfClosure.call()
-
-        println config.tfClosure
-        if (config.tfClosure) {
-          echo "tfClosure"
-          config.tfClosure()
+        println config.tfVars
+        if (config.tfVars) {
+          sh """
+          cat <<EOF >> $tfSourceRelativePath/terraform.tfvars
+          ${config.tfVars}
+          EOF
+          """
         }
 
         if (config.slackChannelName && !muteSlack){
