@@ -144,7 +144,7 @@ def slack_wrap(color, message, slack_configs){
 class SlackI {
     public String slackChannelName
     public String slackToken
-    public String muteSlack
+    public Boolean muteSlack
     public String git_sha
     public String job_name
     public String build_number
@@ -156,8 +156,8 @@ class SlackI {
         this.slackChannelName = config.slackChannelName ?: 'jenkins'
         this.slackToken = config.slackToken
 
-        this.muteSlack = config.muteSlack ?: 'false'
-        this.muteSlack = (muteSlack == 'true')
+        tmpMuteSlack = config.muteSlack ?: 'false'
+        this.muteSlack = (tmpMuteSlack == 'true')
 
         this.git_sha = params.GIT_SHA
         this.job_name = env.JOB_NAME
