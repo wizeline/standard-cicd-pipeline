@@ -141,7 +141,7 @@ def slack_wrap(color, message, slack_configs){
             message: "${message}${sufix}"
 }
 
-class SlackI {
+public class SlackI implements Serializable {
     public String slackChannelName
     public String slackToken
     public boolean muteSlack
@@ -156,9 +156,8 @@ class SlackI {
         this.slackChannelName = config.slackChannelName ?: 'jenkins'
         this.slackToken = config.slackToken
 
-        // def tmpMuteSlack = config.muteSlack ?: 'false'
-        // this.muteSlack = (tmpMuteSlack == 'true')
-        this.muteSlack = false
+        def tmpMuteSlack = config.muteSlack ?: 'false'
+        this.muteSlack = (tmpMuteSlack == 'true')
 
         this.git_sha = "${params.GIT_SHA}"
         this.job_name = "${env.JOB_NAME}"
