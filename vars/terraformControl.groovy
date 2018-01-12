@@ -156,13 +156,14 @@ class SlackI {
         this.slackChannelName = config.slackChannelName ?: 'jenkins'
         this.slackToken = config.slackToken
 
-        def tmpMuteSlack = config.muteSlack ?: 'false'
-        this.muteSlack = (tmpMuteSlack == 'true')
+        // def tmpMuteSlack = config.muteSlack ?: 'false'
+        // this.muteSlack = (tmpMuteSlack == 'true')
+        this.muteSlack = false
 
-        this.git_sha = params.GIT_SHA
-        this.job_name = env.JOB_NAME
-        this.build_number = env.BUILD_NUMBER
-        this.build_url = env.BUILD_URL
+        this.git_sha = "${params.GIT_SHA}"
+        this.job_name = "${env.JOB_NAME}"
+        this.build_number = "${env.BUILD_NUMBER}"
+        this.build_url = "${env.BUILD_URL}"
         this.build_user = build_user
 
         this.sufix = "\n${this.git_sha}:${this.job_name} - ${this.build_url}\n(${this.build_url})\n*Build started by* :${this.build_user}"
