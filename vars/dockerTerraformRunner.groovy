@@ -36,14 +36,6 @@ def call(body) {
     error 'You must provide a dockerRegistryCredentialsId'
   }
 
-  if (!config.tfAwsAccessKeyID) {
-    error 'You must provide a tfAwsAccessKeyID'
-  }
-
-  if (!config.tfAwsSecretAccessKey) {
-    error 'You must provide a tfAwsSecretAccessKey'
-  }
-
   if (!config.tfAwsRegion) {
     error 'You must provide a tfAwsRegion'
   }
@@ -60,6 +52,10 @@ def call(body) {
     error 'You must provide a tfAwsBackendBucketKeyPath'
   }
 
+  if (!config.tfAwsAccessCredentialsId) {
+    error 'You must provide a tfAwsAccessCredentialsId'
+  }
+
   def slackChannelName = config.slackChannelName ?: 'jenkins'
   def slackToken = config.slackToken
   def muteSlack = config.muteSlack ?: 'false'
@@ -72,8 +68,9 @@ def call(body) {
 
   def tfSourceRelativePath = config.tfSourceRelativePath ?: '.'
   def tfCommand = config.tfCommand ?: '/plan.sh'
-  def tfAwsAccessKeyID = config.tfAwsAccessKeyID
-  def tfAwsSecretAccessKey = config.tfAwsSecretAccessKey
+  def tfAwsAccessKeyID = config.tfAwsAccessKeyID //
+  def tfAwsSecretAccessKey = config.tfAwsSecretAccessKey //
+  def tfAwsAccessCredentialsId = config.tfAwsAccessCredentialsId
   def tfAwsRegion = config.tfAwsRegion
   def tfAwsBackendBucketName = config.tfAwsBackendBucketName
   def tfAwsBackendBucketRegion = config.tfAwsBackendBucketRegion
@@ -119,10 +116,20 @@ EOF"""
 
       stage('RunTerraformContainer'){
 
-        withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                          credentialsId: dockerRegistryCredentialsId,
-                          passwordVariable: 'DOCKER_REGISTRY_PASSWORD',
-                          usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
+        withCredentials([
+          [
+            $class: 'UsernamePasswordMultiBinding',
+            credentialsId: dockerRegistryCredentialsId,
+            passwordVariable: 'DOCKER_REGISTRY_PASSWORD',
+            usernameVariable: 'DOCKER_REGISTRY_USERNAME'
+          ],
+          [
+            $class: 'UsernamePasswordMultiBinding',
+            credentialsId: tfAwsAccessCredentialsId,
+            passwordVariable: 'AWS_TF_PASSWORD',
+            usernameVariable: 'AWS_TF_USERNAME'
+          ]
+        ]) {
 
           def workspace = pwd()
 
@@ -135,8 +142,8 @@ EOF"""
 
           env.DOCKER_TLS_VERIFY = ""
 
-          env.AWS_ACCESS_KEY_ID = tfAwsAccessKeyID
-          env.AWS_SECRET_ACCESS_KEY = tfAwsSecretAccessKey
+          env.AWS_ACCESS_KEY_ID = AWS_TF_USERNAME
+          env.AWS_SECRET_ACCESS_KEY = AWS_TF_PASSWORD
           env.AWS_DEFAULT_REGION = tfAwsRegion
           env.AWS_TF_BACKEND_BUCKET = tfAwsBackendBucketName
           env.AWS_TF_BACKEND_REGION = tfAwsBackendBucketRegion

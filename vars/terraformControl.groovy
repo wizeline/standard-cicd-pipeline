@@ -17,8 +17,7 @@ def callTerraform(_cmd, tf_configs) {
 
       tfSourceRelativePath = tf_configs.tfSourceRelativePath
 
-      tfAwsAccessKeyID     = tf_configs.tfAwsAccessKeyID
-      tfAwsSecretAccessKey = tf_configs.tfAwsSecretAccessKey
+      tfAwsAccessCredentialsId = tf_configs.tfAwsAccessCredentialsId
       tfAwsRegion          = tf_configs.tfAwsRegion
 
       tfAwsBackendBucketName    = tf_configs.tfAwsBackendBucketName
@@ -150,8 +149,7 @@ def call(body) {
 
   tf_configs.tfSourceRelativePath = config.jobTfSourceRelativePath ?: '.'
 
-  tf_configs.tfAwsAccessKeyID = config.jobTfAwsAccessKeyID
-  tf_configs.tfAwsSecretAccessKey = config.jobTfAwsSecretAccessKey
+  tf_configs.tfAwsAccessCredentialsId = config.jobTfAwsAccessCredentialsId
   tf_configs.tfAwsRegion = config.jobTfAwsRegion
 
   tf_configs.tfAwsBackendBucketName = config.jobTfAwsBackendBucketName
