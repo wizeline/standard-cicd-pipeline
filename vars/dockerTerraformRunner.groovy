@@ -109,15 +109,15 @@ def call(body) {
         echo "SHA: ${gitSha}"
 
         // Call the script closure
-        config.tfClosure.delegate = this
-        config.tfClosure.resolveStrategy = Closure.DELEGATE_FIRST
-        def result = config.tfClosure.call()
+        // config.tfClosure.delegate = this
+        // config.tfClosure.resolveStrategy = Closure.DELEGATE_FIRST
+        // def result = config.tfClosure.call()
 
-        // println config.tfClosure
-        // if (config.tfClosure) {
-        //   echo "tfClosure"
-        //   config.tfClosure()
-        // }
+        println config.tfClosure
+        if (config.tfClosure) {
+          echo "tfClosure"
+          config.tfClosure()
+        }
 
         if (config.slackChannelName && !muteSlack){
           slackSend channel:"#${slackChannelName}",
