@@ -151,8 +151,10 @@ public class SlackI implements Serializable {
     public String build_url
     public String build_user
     public String sufix
+    private script
 
-    SlackI(config, params, env, build_user) {
+    SlackI(script, config, params, env, build_user) {
+        this.script = script
         this.slackChannelName = config.slackChannelName ?: 'jenkins'
         this.slackToken = config.slackToken
 
@@ -170,9 +172,9 @@ public class SlackI implements Serializable {
 
     def send(color, message){
       if (this.slackChannelName && !this.muteSlack) {
-        slackSend channel: "#${this.slackChannelName}",
-                  color: color,
-                  message: "${message}${this.sufix}"
+        this.script.slackSend channel: "#${this.slackChannelName}",
+                              color: color,
+                              message: "${message}${this.sufix}"
       }
     }
 }
@@ -192,7 +194,7 @@ def call(body) {
 
   print config
 
-  slack_i = new SlackI(config, params, env, getuser())
+  slack_i = new SlackI(this, config, params, env, getuser())
 
   tf_configs.gitRepoUrl = params.GIT_REPO_URL
   tf_configs.gitCredentialsId = params.GIT_CREDENTIALS_ID
