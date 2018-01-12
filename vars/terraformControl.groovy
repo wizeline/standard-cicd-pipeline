@@ -16,12 +16,14 @@ def callTerraform(_cmd, tf_configs) {
       dockerRegistryCredentialsId = "d656f8b1-dcf6-4737-83c1-c9199fb02463"
 
       tfSourceRelativePath = tf_configs.tfSourceRelativePath
+
       tfAwsAccessKeyID     = tf_configs.tfAwsAccessKeyID
       tfAwsSecretAccessKey = tf_configs.tfAwsSecretAccessKey
       tfAwsRegion          = tf_configs.tfAwsRegion
-      tfAwsBackendBucketName    tf_configs.tfAwsBackendBucketName
-      tfAwsBackendBucketRegion  tf_configs.tfAwsBackendBucketRegion
-      tfAwsBackendBucketKeyPath tf_configs.tfAwsBackendBucketKeyPath
+
+      tfAwsBackendBucketName    = tf_configs.tfAwsBackendBucketName
+      tfAwsBackendBucketRegion  = tf_configs.tfAwsBackendBucketRegion
+      tfAwsBackendBucketKeyPath = tf_configs.tfAwsBackendBucketKeyPath
 
       tfCommand = _cmd
       tfVars = tf_configs.tfVars
@@ -155,7 +157,7 @@ def call(body) {
   tf_configs.tfAwsBackendBucketName = config.jobTfAwsBackendBucketName
   tf_configs.tfAwsBackendBucketRegion = config.jobTfAwsBackendBucketRegion
   tf_configs.tfAwsBackendBucketKeyPath = config.jobTfAwsBackendBucketKeyPath
-  
+
   tf_configs.tfVars = config.jobTfVars
 
   if (params.TERRAFORM_COMMAND == "PLAN_APPLY"){
