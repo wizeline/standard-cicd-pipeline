@@ -109,7 +109,7 @@ def call(body) {
         echo "SHA: ${gitSha}"
 
         if (config.tfClosure) {
-          config.tfClosure
+          config.tfClosure()
         }
 
         if (config.slackChannelName && !muteSlack){
