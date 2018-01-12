@@ -1,30 +1,30 @@
 //#!Groovy
 
-def callTerraform(_cmd, configs) {
+def callTerraform(_cmd, tf_configs) {
 
   return dockerTerraformRunner {
-      dockerDaemonUrl = configs.dockerDaemonUrl
-      jenkinsNode = configs.jenkinsNode
+      dockerDaemonUrl = tf_configs.dockerDaemonUrl
+      jenkinsNode = tf_configs.jenkinsNode
 
-      gitRepoUrl       = configs.gitRepoUrl
-      gitCredentialsId = configs.gitCredentialsId
-      gitSha           = configs.gitSha
+      gitRepoUrl       = tf_configs.gitRepoUrl
+      gitCredentialsId = tf_configs.gitCredentialsId
+      gitSha           = tf_configs.gitSha
 
       dockerRegistry              = "devops.wize.mx:5000"
       dockerImageName             = "wize-terraform"
       dockerImageTag              = "0.1.0"
       dockerRegistryCredentialsId = "d656f8b1-dcf6-4737-83c1-c9199fb02463"
 
-      tfSourceRelativePath = configs.tfSourceRelativePath
-      tfAwsAccessKeyID     = configs.tfAwsAccessKeyID
-      tfAwsSecretAccessKey = configs.tfAwsSecretAccessKey
-      tfAwsRegion          = configs.tfAwsRegion
-      tfAwsBackendBucketName    configs.tfAwsBackendBucketName
-      tfAwsBackendBucketRegion  configs.tfAwsBackendBucketRegion
-      tfAwsBackendBucketKeyPath configs.tfAwsBackendBucketKeyPath
+      tfSourceRelativePath = tf_configs.tfSourceRelativePath
+      tfAwsAccessKeyID     = tf_configs.tfAwsAccessKeyID
+      tfAwsSecretAccessKey = tf_configs.tfAwsSecretAccessKey
+      tfAwsRegion          = tf_configs.tfAwsRegion
+      tfAwsBackendBucketName    tf_configs.tfAwsBackendBucketName
+      tfAwsBackendBucketRegion  tf_configs.tfAwsBackendBucketRegion
+      tfAwsBackendBucketKeyPath tf_configs.tfAwsBackendBucketKeyPath
 
       tfCommand = _cmd
-      tfVars = configs.tfVars
+      tfVars = tf_configs.tfVars
   }
 }
 
@@ -147,12 +147,15 @@ def call(body) {
   tf_configs.jenkinsNode = config.jobJenkinsNode
 
   tf_configs.tfSourceRelativePath = config.jobTfSourceRelativePath ?: '.'
+
   tf_configs.tfAwsAccessKeyID = config.jobTfAwsAccessKeyID
   tf_configs.tfAwsSecretAccessKey = config.jobTfAwsSecretAccessKey
   tf_configs.tfAwsRegion = config.jobTfAwsRegion
+
   tf_configs.tfAwsBackendBucketName = config.jobTfAwsBackendBucketName
   tf_configs.tfAwsBackendBucketRegion = config.jobTfAwsBackendBucketRegion
   tf_configs.tfAwsBackendBucketKeyPath = config.jobTfAwsBackendBucketKeyPath
+  
   tf_configs.tfVars = config.jobTfVars
 
   if (params.TERRAFORM_COMMAND == "PLAN_APPLY"){
