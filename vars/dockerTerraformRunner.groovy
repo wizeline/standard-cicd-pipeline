@@ -108,6 +108,10 @@ def call(body) {
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
 
+        if (config.tfClosure) {
+          config.tfClosure
+        }
+
         if (config.slackChannelName && !muteSlack){
           slackSend channel:"#${slackChannelName}",
                     color:'good',
@@ -150,7 +154,7 @@ def call(body) {
           // Call the buidler container
           exit_code = sh script: """
           env | sort | grep -E \"AWS_\" > .env
-          $docker_bin rmi -f $dockerRegistry/$dockerImageName || true
+          $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || true
           docker_id=\$($docker_bin create --env-file .env $dockerRegistry/$dockerImageName:$dockerImageTag $tfCommand)
           $docker_bin cp $workspace/$tfSourceRelativePath/. \$docker_id:/project
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
@@ -163,7 +167,7 @@ def call(body) {
           // Ensure every exited container has been removed
           sh script: """
           containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
-          [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f $dockerRegistry/$dockerImageName || exit 0
+          [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || exit 0
           """, returnStatus: true
 
           if (exit_code != 0){
