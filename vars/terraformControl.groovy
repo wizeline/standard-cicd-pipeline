@@ -193,7 +193,7 @@ def call(body) {
 
   print config
 
-  slack_i = SlackI(config)
+  slack_i = new SlackI(config)
 
   tf_configs.gitRepoUrl = params.GIT_REPO_URL
   tf_configs.gitCredentialsId = params.GIT_CREDENTIALS_ID
