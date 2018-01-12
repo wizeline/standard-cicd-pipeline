@@ -149,10 +149,12 @@ def call(body) {
 
           // Call the buidler container
           exit_code = sh script: """
+          env | sort | grep -E \"AWS_\" > .env
           $docker_bin rmi -f $dockerRegistry/$dockerImageName || true
-          docker_id=\$($docker_bin create $dockerRegistry/$dockerImageName:$dockerImageTag $tfCommand)
+          docker_id=\$($docker_bin create --env-file .env $dockerRegistry/$dockerImageName:$dockerImageTag $tfCommand)
           $docker_bin cp $workspace/$tfSourceRelativePath/. \$docker_id:/project
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
+          rm .env
 
           [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           exit 0
