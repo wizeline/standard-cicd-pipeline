@@ -139,21 +139,21 @@ def call(body) {
   def muteSlack = config.muteSlack ?: 'false'
   muteSlack = (muteSlack == 'true')
 
-  tf_configs.jobGitRepoUrl = params.GIT_REPO_URL
-  tf_configs.jobGitCredentialsId = params.GIT_CREDENTIALS_ID
-  tf_configs.jobGitSha = params.GIT_SHA
+  tf_configs.gitRepoUrl = params.GIT_REPO_URL
+  tf_configs.gitCredentialsId = params.GIT_CREDENTIALS_ID
+  tf_configs.gitSha = params.GIT_SHA
 
-  tf_configs.jobDockerDaemonHost = config.jobDockerDaemonHost
-  tf_configs.jobJenkinsNode = config.jobJenkinsNode
+  tf_configs.dockerDaemonUrl = config.jobDockerDaemonHost
+  tf_configs.jenkinsNode = config.jobJenkinsNode
 
-  tf_configs.jobTfSourceRelativePath = config.jobTfSourceRelativePath ?: '.'
-  tf_configs.jobTfAwsAccessKeyID = config.jobTfAwsAccessKeyID
-  tf_configs.jobTfAwsSecretAccessKey = config.jobTfAwsSecretAccessKey
-  tf_configs.jobTfAwsRegion = config.jobTfAwsRegion
-  tf_configs.jobTfAwsBackendBucketName = config.jobTfAwsBackendBucketName
-  tf_configs.jobTfAwsBackendBucketRegion = config.jobTfAwsBackendBucketRegion
-  tf_configs.jobTfAwsBackendBucketKeyPath = config.jobTfAwsBackendBucketKeyPath
-  tf_configs.jobTfVars = config.jobTfVars
+  tf_configs.tfSourceRelativePath = config.jobTfSourceRelativePath ?: '.'
+  tf_configs.tfAwsAccessKeyID = config.jobTfAwsAccessKeyID
+  tf_configs.tfAwsSecretAccessKey = config.jobTfAwsSecretAccessKey
+  tf_configs.tfAwsRegion = config.jobTfAwsRegion
+  tf_configs.tfAwsBackendBucketName = config.jobTfAwsBackendBucketName
+  tf_configs.tfAwsBackendBucketRegion = config.jobTfAwsBackendBucketRegion
+  tf_configs.tfAwsBackendBucketKeyPath = config.jobTfAwsBackendBucketKeyPath
+  tf_configs.tfVars = config.jobTfVars
 
   if (params.TERRAFORM_COMMAND == "PLAN_APPLY"){
     plan_apply(tf_configs)
