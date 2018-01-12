@@ -115,12 +115,6 @@ def call(body) {
           ${config.tfVars}
 EOF"""
         }
-
-        if (config.slackChannelName && !muteSlack){
-          slackSend channel:"#${slackChannelName}",
-                    color:'good',
-                    message:"*START* (dockerTerraformRunner) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER}\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* :${getuser()}"
-        }
       }
 
       stage('RunTerraformContainer'){
@@ -174,27 +168,8 @@ EOF"""
           [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || exit 0
           """, returnStatus: true
 
-          if (exit_code != 0){
-            echo "FAILURE"
-            currentBuild.result = 'FAILURE'
-            if (config.slackChannelName && !muteSlack){
-              slackSend channel:"#${slackChannelName}",
-                        color:'danger',
-                        message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
-            }
-            error("FAILURE - Run container returned non 0 exit code")
-            return exit_code
-          }
-
-          echo "SUCCESS"
-          currentBuild.result = 'SUCCESS'
-          if (config.slackChannelName && !muteSlack){
-            slackSend channel:"#${slackChannelName}",
-                      color:'good',
-                      message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
-          }
+          return exit_code
         }
-        return exit_code
       }
     } catch (err) {
       println err
