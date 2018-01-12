@@ -165,7 +165,7 @@ class SlackI {
         this.build_url = env.BUILD_URL
         this.build_user = build_user
 
-        this.sufix = "\n${slack_configs.git_sha}:${slack_configs.job_name} - ${slack_configs.build_url}\n(${slack_configs.build_url})\n*Build started by* :${slack_configs.build_user}"
+        this.sufix = "\n${this.git_sha}:${this.job_name} - ${this.build_url}\n(${this.build_url})\n*Build started by* :${this.build_user}"
     }
 
     def send(color, message){
@@ -181,7 +181,6 @@ def call(body) {
 
   def config = [:]
   def tf_configs = [:]
-  def slack_configs = [:]
   def slack_i
   def return_hash = [:]
 
