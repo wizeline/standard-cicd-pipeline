@@ -152,7 +152,7 @@ class SlackI {
     public String build_user
     public String sufix
 
-    SlackI(config, params, env) {
+    SlackI(config, params, env, build_user) {
         this.slackChannelName = config.slackChannelName ?: 'jenkins'
         this.slackToken = config.slackToken
 
@@ -163,7 +163,7 @@ class SlackI {
         this.job_name = env.JOB_NAME
         this.build_number = env.BUILD_NUMBER
         this.build_url = env.BUILD_URL
-        this.build_user = getuser()
+        this.build_user = build_user
 
         this.sufix = "\n${slack_configs.git_sha}:${slack_configs.job_name} - ${slack_configs.build_url}\n(${slack_configs.build_url})\n*Build started by* :${slack_configs.build_user}"
     }
@@ -193,7 +193,7 @@ def call(body) {
 
   print config
 
-  slack_i = new SlackI(config, params, env)
+  slack_i = new SlackI(config, params, env, getuser())
 
   tf_configs.gitRepoUrl = params.GIT_REPO_URL
   tf_configs.gitCredentialsId = params.GIT_CREDENTIALS_ID
