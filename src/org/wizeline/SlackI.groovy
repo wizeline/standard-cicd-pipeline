@@ -13,6 +13,7 @@ public class SlackI implements Serializable {
     private steps
 
     // steps, params, env, config, build_user
+    @NonCPS
     SlackI(steps, params, env, config, build_user) {
       this.steps = steps
 
@@ -27,13 +28,13 @@ public class SlackI implements Serializable {
       this.build_url = "${env.BUILD_URL}"
       this.build_user = build_user
 
-      // loadSufix()
-      this.sufix = "\n${this.git_sha}:${this.job_name} - ${this.build_number}\n(${this.build_url})\n*Build started by* :${this.build_user}"
+      loadSufix()
+      // this.sufix = "\n${this.git_sha}:${this.job_name} - ${this.build_number}\n(${this.build_url})\n*Build started by* :${this.build_user}"
     }
 
-    // private void loadSufix(){
-    //   this.sufix = "\n${this.git_sha}:${this.job_name} - ${this.build_number}\n(${this.build_url})\n*Build started by* :${this.build_user}"
-    // }
+    private void loadSufix(){
+      this.sufix = "\n${this.git_sha}:${this.job_name} - ${this.build_number}\n(${this.build_url})\n*Build started by* :${this.build_user}"
+    }
 
     def send(color, message){
       if (this.slackChannelName && !this.muteSlack) {
