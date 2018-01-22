@@ -12,20 +12,20 @@ public class SlackI implements Serializable {
     public String sufix
     private steps
 
-    // steps, config, params, env, build_user
-    SlackI(params) {
-      this.steps = params.steps
+    // steps, params, env, config, build_user
+    SlackI(steps, params, env, config, build_user) {
+      this.steps = steps
 
-      this.slackChannelName = params.config.slackChannelName ?: 'jenkins'
-      this.slackToken = params.config.slackToken
-      def tmpMuteSlack = params.config.muteSlack ?: 'false'
+      this.slackChannelName = config.slackChannelName ?: 'jenkins'
+      this.slackToken = config.slackToken
+      def tmpMuteSlack = config.muteSlack ?: 'false'
       this.muteSlack = (tmpMuteSlack == 'true')
 
-      this.git_sha = "${params.params.GIT_SHA}"
-      this.job_name = "${params.env.JOB_NAME}"
-      this.build_number = "${params.env.BUILD_NUMBER}"
-      this.build_url = "${params.env.BUILD_URL}"
-      this.build_user = params.build_user
+      this.git_sha = "${params.GIT_SHA}"
+      this.job_name = "${env.JOB_NAME}"
+      this.build_number = "${env.BUILD_NUMBER}"
+      this.build_url = "${env.BUILD_URL}"
+      this.build_user = build_user
 
       loadSufix()
     }

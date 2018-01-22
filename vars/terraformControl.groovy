@@ -151,11 +151,11 @@ def call(body) {
 
   // steps, params, env, config, build_user
   slack_i = new SlackI(
-    steps: this,
-    params: params,
-    env: env,
-    config: config,
-    build_user: getuser()
+    this,
+    params,
+    env,
+    config,
+    getuser()
   )
 
   tf_configs.gitRepoUrl = params.GIT_REPO_URL
