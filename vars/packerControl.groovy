@@ -56,6 +56,7 @@ def call(body) {
     dockerRegistryCredentialsId = "d656f8b1-dcf6-4737-83c1-c9199fb02463"
 
     dockerDaemonHost = "internal-docker.wize.mx"
+    jenkinsNode = config.jobJenkinsNode
   }
 
   if (exit_code == 0) {
