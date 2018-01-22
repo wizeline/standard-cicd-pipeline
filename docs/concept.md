@@ -2,7 +2,8 @@
 
 *Flows*
 
-- Applications
+- Applications CI (k8s-aws, k8s-gcloud, app-engine, CDN (s3-aws, firebase))
+- Applications CD (k8s-aws, k8s-gcloud, app-engine, CDN (s3-aws, firebase))
 - Terraform
 - Lambdas
 - Libraies
