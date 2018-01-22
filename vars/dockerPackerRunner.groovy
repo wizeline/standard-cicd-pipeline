@@ -138,6 +138,7 @@ EOF"""
           exit_code = sh script: """
           env | sort | grep -E \"AWS_\" > .env
           cat $packerSourceRelativePath/packer.variables >> .env
+          cat .env
 
           $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || true
           docker_id=\$($docker_bin create --env-file .env $dockerRegistry/$dockerImageName:$dockerImageTag)
