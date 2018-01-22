@@ -91,13 +91,12 @@ def call(body) {
         if (config.packerVars) {
           sh """
           cat <<EOF > $packerSourceRelativePath/packer.variables
-          ${config.packerVars}
-
+${config.packerVars}
 EOF"""
         }
       }
 
-      stage('RunTerraformContainer'){
+      stage('RunPackerContainer'){
 
         withCredentials([
           [
