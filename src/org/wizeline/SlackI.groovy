@@ -15,9 +15,9 @@ public class SlackI implements Serializable {
     // steps, config, params, env, build_user
     SlackI(params) {
       this.steps = params.steps
+
       this.slackChannelName = params.config.slackChannelName ?: 'jenkins'
       this.slackToken = params.config.slackToken
-
       def tmpMuteSlack = params.config.muteSlack ?: 'false'
       this.muteSlack = (tmpMuteSlack == 'true')
 
@@ -27,7 +27,7 @@ public class SlackI implements Serializable {
       this.build_url = "${params.env.BUILD_URL}"
       this.build_user = params.build_user
 
-        load_sufix()
+      this.load_sufix()
     }
 
     def load_sufix(){
