@@ -60,6 +60,9 @@ def call(body) {
 
   def jenkinsNode = config.jenkinsNode
 
+  def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
+  println "disableSubmodules: ${jobDisableSubmodules}"
+
 
 
   node (jenkinsNode){
@@ -68,14 +71,12 @@ def call(body) {
       deleteDir()
 
       stage ('Checkout') {
-        // git branch: gitSha, url: gitRepoUrl, credentialsId: gitCredentialsId
-        // gitBranch = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
-        // gitSha = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
 
         git_info = gitCheckout {
           branch = gitSha
           credentialsId = gitCredentialsId
           repoUrl = gitRepoUrl
+          disableSubmodules = jobDisableSubmodules
         }
         gitBranch = git_info["git-branch"]
         gitSha = git_info["git-commit-sha"]

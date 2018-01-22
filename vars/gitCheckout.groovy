@@ -9,15 +9,21 @@ def call(body) {
     body()
   }
 
+  echo "gitCheckout.groovy"
+  print config
+
+  def disableSubmodules = (config.disableSubmodules == "true") ? true : false
+  println "disableSubmodules: ${disableSubmodules}"
+
   checkout([$class: 'GitSCM',
             branches: [[name: config.branch]],
-            doGenerateSubmoduleConfigurations: true,
+            doGenerateSubmoduleConfigurations: false,
             extensions: [[$class: 'SubmoduleOption',
-                          disableSubmodules: true,
+                          disableSubmodules: disableSubmodules,
                           parentCredentials: true,
                           recursiveSubmodules: true,
                           reference: '',
-                          trackingSubmodules: false]],
+                          trackingSubmodules: true]],
             submoduleCfg: [],
             userRemoteConfigs: [
               [
@@ -26,6 +32,8 @@ def call(body) {
                 url: config.repoUrl]
             ]
         ])
+
+  sh "ls -la"
 
   return_hash = [:]
   return_hash["git-branch"] = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
