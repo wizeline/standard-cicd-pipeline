@@ -92,6 +92,7 @@ def call(body) {
           sh """
           cat <<EOF > $packerSourceRelativePath/packer.variables
           ${config.packerVars}
+
 EOF"""
         }
       }
@@ -142,7 +143,7 @@ EOF"""
 
           $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || true
           docker_id=\$($docker_bin create --env-file .env $dockerRegistry/$dockerImageName:$dockerImageTag)
-          $docker_bin cp $workspace/$packerSourceRelativePath/. \$docker_id:/project
+          $docker_bin cp $workspace/$packerSourceRelativePath/. \$docker_id:/root/packer
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
           rm .env
 
