@@ -1,4 +1,5 @@
 //#!Groovy
+import org.wizeline.SlackI
 
 def callTerraform(_cmd, tf_configs) {
 
@@ -149,7 +150,7 @@ def call(body) {
   print config
 
   // steps, params, env, config, build_user
-  slack_i = new org.wizeline.SlackI(
+  slack_i = new SlackI(
     steps: this,
     params: params,
     env: env,
