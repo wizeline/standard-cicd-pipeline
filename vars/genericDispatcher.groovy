@@ -25,6 +25,7 @@ def call(body) {
   def jobGitRepoUrl = params.GIT_REPO_URL
   def jobGitCredentialsId = params.GIT_CREDENTIALS_ID
   def jobGitSha = params.BRANCH
+  def jobDisableSubmodules = config.disableSubmodules
   def jobDockerImageName = params.DOCKER_IMAGE_NAME
   def jobSlackChannelName = params.SLACK_CHANNEL_NAME
   def jobDockerSourceRelativePath = params.DOCKER_SOURCE_REL_PATH
@@ -43,6 +44,7 @@ def call(body) {
         branch = jobGitShaNoOrigin
         credentialsId = jobGitCredentialsId
         repoUrl = jobGitRepoUrl
+        disableSubmodules = jobDisableSubmodules
       }
       jobGitBranch = git_info["git-branch"]
       jobGitShaCommit = git_info["git-commit-sha"]
@@ -60,6 +62,7 @@ def call(body) {
         gitRepoUrl = jobGitRepoUrl
         gitCredentialsId = jobGitCredentialsId
         gitSha  = jobGitShaCommit
+        disableSubmodules = jobDisableSubmodules
 
         dockerImageName = jobDockerImageName
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
@@ -94,6 +97,7 @@ def call(body) {
         gitRepoUrl = jobGitRepoUrl
         gitCredentialsId = jobGitCredentialsId
         gitSha  = jobGitShaCommit
+        disableSubmodules = jobDisableSubmodules
 
         dockerImageName = jobDockerImageName
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
@@ -126,6 +130,7 @@ def call(body) {
           gitRepoUrl = jobGitRepoUrl
           gitCredentialsId = jobGitCredentialsId
           gitSha  = jobGitShaCommit
+          disableSubmodules = jobDisableSubmodules
 
           dockerImageName = jobDockerImageName
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
