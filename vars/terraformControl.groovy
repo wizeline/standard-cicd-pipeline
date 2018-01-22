@@ -133,52 +133,6 @@ def plan_destroy(tf_configs, slack_i) {
   }
 }
 
-def slack_wrap(color, message, slack_configs){
-  def sufix = "\n${slack_configs.git_sha}:${slack_configs.job_name} - ${slack_configs.build_url}\n(${slack_configs.build_url})\n*Build started by* :${slack_configs.build_user}"
-
-  slackSend channel: "#${slack_configs.slackChannelName}",
-            color: color,
-            message: "${message}${sufix}"
-}
-
-public class SlackI implements Serializable {
-    public String slackChannelName
-    public String slackToken
-    public boolean muteSlack
-    public String git_sha
-    public String job_name
-    public String build_number
-    public String build_url
-    public String build_user
-    public String sufix
-    private script
-
-    SlackI(script, config, params, env, build_user) {
-        this.script = script
-        this.slackChannelName = config.slackChannelName ?: 'jenkins'
-        this.slackToken = config.slackToken
-
-        def tmpMuteSlack = config.muteSlack ?: 'false'
-        this.muteSlack = (tmpMuteSlack == 'true')
-
-        this.git_sha = "${params.GIT_SHA}"
-        this.job_name = "${env.JOB_NAME}"
-        this.build_number = "${env.BUILD_NUMBER}"
-        this.build_url = "${env.BUILD_URL}"
-        this.build_user = build_user
-
-        this.sufix = "\n${this.git_sha}:${this.job_name} - ${this.build_number}\n(${this.build_url})\n*Build started by* :${this.build_user}"
-    }
-
-    def send(color, message){
-      if (this.slackChannelName && !this.muteSlack) {
-        this.script.slackSend channel: "#${this.slackChannelName}",
-                              color: color,
-                              message: "${message}${this.sufix}"
-      }
-    }
-}
-
 def call(body) {
 
   def config = [:]
@@ -194,7 +148,14 @@ def call(body) {
 
   print config
 
-  slack_i = new SlackI(this, config, params, env, getuser())
+  // steps, params, env, config, build_user
+  slack_i = new org.wizeline.SlackI(
+    steps: this,
+    params: params,
+    env: env,
+    config: config,
+    build_user: getuser()
+  )
 
   tf_configs.gitRepoUrl = params.GIT_REPO_URL
   tf_configs.gitCredentialsId = params.GIT_CREDENTIALS_ID
