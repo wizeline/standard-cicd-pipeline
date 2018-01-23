@@ -88,6 +88,9 @@ def call(body) {
 
   def jenkinsNode = config.jenkinsNode
 
+  def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
+  println "disableSubmodules: ${jobDisableSubmodules}"
+
   node (jenkinsNode){
     try {
       // Clean workspace before doing anything
@@ -98,6 +101,7 @@ def call(body) {
           branch = gitSha
           credentialsId = gitCredentialsId
           repoUrl = gitRepoUrl
+          disableSubmodules = jobDisableSubmodules
         }
         gitBranch = git_info["git-branch"]
         gitSha = git_info["git-commit-sha"]
