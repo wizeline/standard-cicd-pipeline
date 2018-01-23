@@ -1,0 +1,2 @@
+jinja2==2.10
+jenkinsapi==0.3.6
