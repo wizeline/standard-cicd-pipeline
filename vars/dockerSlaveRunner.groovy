@@ -119,8 +119,6 @@ chmod +x init.sh
 
           env.DOCKER_TLS_VERIFY = ""
 
-          env.AWS_DEFAULT_REGION = packerAwsRegion
-
           echo "Using remote docker daemon: ${dockerDaemon}"
           docker_bin="docker -H $dockerDaemon"
 
