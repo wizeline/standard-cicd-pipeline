@@ -28,6 +28,8 @@ def call(body) {
   def jobDockerImageTag = params.DOCKER_IMAGE_TAG
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID
 
+  def commits_MaxDepth = params.COMMITS_MAX_DEPTH ?: '5'
+
   slack_i = new SlackI(
     this,
     params,
@@ -53,7 +55,7 @@ def call(body) {
 
     envsRegExp = ""
     dockerWorkspace = "/project"
-    dockerCommand = "--max_depth 5"
+    dockerCommand = "--max_depth $commits_MaxDepth"
     // dockerInit = ""
   }
 
