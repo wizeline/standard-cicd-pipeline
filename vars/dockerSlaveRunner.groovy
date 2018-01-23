@@ -96,7 +96,7 @@ chmod +x init.sh
         }
       }
 
-      stage('RunPackerContainer'){
+      stage('RunSlaveContainer'){
 
         withCredentials([
           [
@@ -129,7 +129,6 @@ chmod +x init.sh
           // Call the runner container
           exit_code = sh script: """
           env | sort | grep -E \"$envsRegExp\" > .env
-          cat .env
 
           $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || true
           docker_id=\$($docker_bin create --env-file .env $dockerRegistry/$dockerImageName:$dockerImageTag $dockerCommand)
@@ -142,10 +141,11 @@ chmod +x init.sh
           """, returnStatus: true
 
           // Ensure every exited container has been removed
-          sh script: """
-          containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
-          [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || exit 0
-          """, returnStatus: true
+          // temporary disable
+          // sh script: """
+          // containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
+          // [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || exit 0
+          // """, returnStatus: true
 
           return exit_code
         }
