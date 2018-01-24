@@ -40,7 +40,8 @@ class JenkinsCustom:
 
     def has_job(self, job_name, folder=None):
         if folder:
-            check_job_exsist_url = f"{self.jenkins_url}/job/{folder}/checkJobName"
+            check_job_exsist_url = \
+              f"{self.jenkins_url}/job/{folder}/checkJobName"
         else:
             check_job_exsist_url = f"{self.jenkins_url}/checkJobName"
 
@@ -122,24 +123,49 @@ class GenericAppFlow:
     generic_dispatcher_trigger = None
     secrets_scan = None
     project_folder = None
+    parameters = None
     prefix = ""
+    default_params = {
+        "github_project_url": "",
+        "git_repo_url": "",
+        "docker_image_name": "",
+        "docker_source_rel_path": ".",
+        "slack_channel_name": "jenkins",
+    }
 
     def __init__(self, prefix=""):
         self.prefix = prefix
         if not self.prefix:
             raise "prefix arg is required"
 
+    def load_fields(self):
         self.load_j_server()
         self.load_project_folder()
         self.load_secrets_scan()
         self.load_generic_dispatcher()
         self.load_generic_dispatcher_trigger()
 
+    def set_parameters(self, parameters):
+        self.parameters = {**self.default_params, **parameters}
+
+    def validate_params(self):
+        if not self.parameters:
+            err = "You have to set parameters first."
+            logger.critical(err)
+            raise Exception("Parameter error")
+        for k, v in self.default_params.items():
+            if not self.parameters[k]:
+                err = f"Parameter {k} is required."
+                logger.critical(err)
+                raise Exception("Parameter error")
+
     def create(self):
+        self.validate_params()
+        self.load_fields()
         self.project_folder.create()
-        self.generic_dispatcher.create(folder=gaf.project_folder_name)
-        self.generic_dispatcher_trigger.create(folder=gaf.project_folder_name)
-        self.secrets_scan.create(folder=gaf.project_folder_name)
+        self.generic_dispatcher.create(folder=self.project_folder_name)
+        self.generic_dispatcher_trigger.create(folder=self.project_folder_name)
+        self.secrets_scan.create(folder=self.project_folder_name)
 
     def load_j_server(self):
         jenkins_url = os.environ['JENKINS_URL']
@@ -152,59 +178,51 @@ class GenericAppFlow:
 
     # Folder interactions are not working in the jenkinsapi library
     def load_project_folder(self):
-        params = {}
         self.project_folder_name = f"{self.prefix}-folder"
         self.project_folder = JobTemplate(
           jenkins_object=self.j_server,
           name=self.project_folder_name,
           template_file='templates/jenkins-folder.xml.j2',
-          parameters=params)
+          parameters=self.parameters)
 
     def load_secrets_scan(self):
-        params = {
-          "github_project_url": "https://github.com/wizeline/standard-cicd-pipeline/",
-          "git_repo_url": "git@github.com:wizeline/wz-statuspage.git",
-        }
         self.secrets_scan_name = f"{self.prefix}-security-scan"
         self.secrets_scan = JobTemplate(
           jenkins_object=self.j_server,
           name=self.secrets_scan_name,
           template_file='templates/secrets-scan.xml.j2',
-          parameters=params)
+          parameters=self.parameters)
 
     def load_generic_dispatcher(self):
-        params = {
-            "github_project_url":
-            "https://github.com/wizeline/standard-cicd-pipeline/",
-            "git_repo_url": "git@github.com:wizeline/wz-statuspage.git",
-            "docker_image_name": "cachet-backend",
-            "slack_channel_name": "jenkins",
-            "docker_source_rel_path": "backend",
-            "secrets_scan_job": self.secrets_scan_name,
-        }
         self.generic_dispatcher_name = f"{self.prefix}-dispatcher"
         self.generic_dispatcher = JobTemplate(
           jenkins_object=self.j_server,
           name=self.generic_dispatcher_name,
           template_file='templates/generic-app-flow.xml.j2',
-          parameters=params)
+          parameters=self.parameters)
 
     def load_generic_dispatcher_trigger(self):
-        params = {
-            "github_project_url":
-            "https://github.com/wizeline/standard-cicd-pipeline/",
-            "git_repo_url": "git@github.com:wizeline/wz-statuspage.git",
-            "dispatcher_job": self.generic_dispatcher_name,
-        }
         self.generic_dispatcher_trigger_name = \
             f"{self.prefix}-dispatcher-trigger"
         self.generic_dispatcher_trigger = JobTemplate(
           jenkins_object=self.j_server,
           name=self.generic_dispatcher_trigger_name,
           template_file='templates/generic-app-flow-trigger.xml.j2',
-          parameters=params)
+          parameters=self.parameters)
 
 
+def main():
+    gaf = GenericAppFlow(prefix="saul-tests-delete")
+    gaf.set_parameters({
+        "github_project_url":
+        "https://github.com/wizeline/standard-cicd-pipeline/",
+        "git_repo_url": "git@github.com:wizeline/wz-statuspage.git",
+        "docker_image_name": "cachet-backend",
+        "docker_source_rel_path": "backend",
+        "slack_channel_name": "jenkins",
+    })
+    gaf.create()
 
-gaf = GenericAppFlow(prefix="saul-tests-delete")
-gaf.create()
+
+if __name__ == "__main__":
+    main()
