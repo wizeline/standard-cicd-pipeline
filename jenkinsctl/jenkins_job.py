@@ -17,6 +17,8 @@ class JenkinsCustom:
         self.jenkins_url = jenkins_url
         self.username = username
         self.password = password
+        if not self.jenkins_url or not self.username or not self.password:
+            raise Exception("Jenkins url, username and password are required")
         self.crumb = self.get_crumb()
         self.session = requests.session()
 
@@ -136,7 +138,7 @@ class GenericAppFlow:
     def __init__(self, prefix=""):
         self.prefix = prefix
         if not self.prefix:
-            raise "prefix arg is required"
+            raise Exception("prefix arg is required")
 
     def load_fields(self):
         self.load_j_server()
@@ -176,7 +178,6 @@ class GenericAppFlow:
           password=os.environ['JENKINS_TOKEN']
         )
 
-    # Folder interactions are not working in the jenkinsapi library
     def load_project_folder(self):
         self.project_folder_name = f"{self.prefix}-folder"
         self.project_folder = JobTemplate(
