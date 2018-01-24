@@ -165,9 +165,9 @@ class GenericAppFlow:
         self.validate_params()
         self.load_fields()
         self.project_folder.create()
+        self.secrets_scan.create(folder=self.project_folder_name)
         self.generic_dispatcher.create(folder=self.project_folder_name)
         self.generic_dispatcher_trigger.create(folder=self.project_folder_name)
-        self.secrets_scan.create(folder=self.project_folder_name)
 
     def load_j_server(self):
         jenkins_url = os.environ['JENKINS_URL']
@@ -196,6 +196,7 @@ class GenericAppFlow:
 
     def load_generic_dispatcher(self):
         self.generic_dispatcher_name = f"{self.prefix}-dispatcher"
+        self.parameters["secrets_scan_job"] = self.secrets_scan_name
         self.generic_dispatcher = JobTemplate(
           jenkins_object=self.j_server,
           name=self.generic_dispatcher_name,
@@ -203,6 +204,7 @@ class GenericAppFlow:
           parameters=self.parameters)
 
     def load_generic_dispatcher_trigger(self):
+        self.parameters["dispatcher_job"] = self.generic_dispatcher_name
         self.generic_dispatcher_trigger_name = \
             f"{self.prefix}-dispatcher-trigger"
         self.generic_dispatcher_trigger = JobTemplate(
@@ -216,7 +218,7 @@ def main():
     gaf = GenericAppFlow(prefix="saul-tests-delete")
     gaf.set_parameters({
         "github_project_url":
-        "https://github.com/wizeline/standard-cicd-pipeline/",
+        "https://github.com/wizeline/wz-statuspage/",
         "git_repo_url": "git@github.com:wizeline/wz-statuspage.git",
         "docker_image_name": "cachet-backend",
         "docker_source_rel_path": "backend",

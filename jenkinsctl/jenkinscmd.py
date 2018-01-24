@@ -22,7 +22,7 @@ def create_app_flow():
         click.echo(f" - {k}: {v}")
     if not click.confirm("\nDo you want to continue?", abort=True):
         return
-    gaf = GenericAppFlow(prefix=name)
+    gaf = jenkins_job.GenericAppFlow(prefix=name)
     gaf.set_parameters(params)
     gaf.create()
 
