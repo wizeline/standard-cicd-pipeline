@@ -123,8 +123,7 @@ DOCKER_REGISTRY_PASSWORD=$DOCKER_REGISTRY_PASSWORD
 DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
 """
 
-          writeFile file: ".env"
-                    text: env_vars
+          writeFile file: ".env", text: env_vars
 
           echo "Using remote docker daemon: ${dockerDaemon}"
           docker_bin="docker -H $dockerDaemon"
