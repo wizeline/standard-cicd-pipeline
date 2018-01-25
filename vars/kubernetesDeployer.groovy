@@ -1,4 +1,32 @@
 //#!Groovy
+
+// # Calling script example
+// // def jobK8sConfigCredentialsId = params.K8S_CREDENTIALS_ID
+// // def jobK8sContext = params.K8S_CONTEXT
+// // def jobK8sNamespace = params.K8S_NAMESPACE
+// // def jobK8sDeployment = params.K8S_DEPLOYMENT
+// // def jobK8sEnv = params.K8S_ENV
+// // def jobDockerRegistry = params.DOCKER_REGISTRY
+// // def jobDockerImageName = params.DOCKER_IMAGE_NAME
+// // def jobDockerImageTag = params.DOCKER_COMMIT_TAG
+// // def jobDockerDaemon = params.DOCKER_DAEMON_URL
+// //
+// // kubernetesDeployer {
+// //   k8sConfigCredentialsId = jobK8sConfigCredentialsId
+// //   k8sContext = jobK8sContext
+// //   k8sNamespace = jobK8sNamespace
+// //   k8sDeploymentName = jobK8sDeployment
+// //   k8sEnvTag = jobK8sEnv
+// //
+// //   dockerRegistry = jobDockerRegistry
+// //   dockerImageName = jobDockerImageName
+// //   dockerImageTag = jobDockerImageTag
+// //
+// //   dockerDaemonHost = "internal-docker.wize.mx"
+// //   dockerRegistryCredentialsId = "d656f8b1-dcf6-4737-83c1-c9199fb02463"
+// // }
+
+
 import org.wizeline.SlackI
 
 def call(body) {
@@ -29,7 +57,7 @@ def call(body) {
   }
 
   if (!config.k8sConfigCredentialsId) {
-    error 'You must provide a dockerRegistryCredentialsId'
+    error 'You must provide a k8sConfigCredentialsId'
   }
 
   if (!config.dockerImageName) {
