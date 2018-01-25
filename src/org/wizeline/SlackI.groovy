@@ -37,9 +37,9 @@ public class SlackI implements Serializable {
 
     @NonCPS
     private void useK8sSufix(){
-      job_name_number = "${this.job_name} - ${this.build_number}\n(${this.build_url})\n"
-      deployment_artifact = "${config.dockerImageName}:${config.dockerImageTag}"
-      deployment_env = "${config.k8sContext}:${config.k8sNamespace}:${config.k8sDeploymentName}"
+      def job_name_number = "${this.job_name} - ${this.build_number}\n(${this.build_url})\n"
+      def deployment_artifact = "${config.dockerImageName}:${config.dockerImageTag}"
+      def deployment_env = "${config.k8sContext}:${config.k8sNamespace}:${config.k8sDeploymentName}"
       this.sufix = "\n${job_name_number}${deployment_artifact} in ${deployment_env}"
     }
 
