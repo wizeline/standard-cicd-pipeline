@@ -141,7 +141,7 @@ def call(body) {
           // Ensure every exited container has been removed
           sh script: """
           containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
-          [ -n "\$containers" ] && $docker_bin rm -f \$containers || exit 0
+          [ -n "\$containers" ] && $docker_bin rm \$containers || exit 0
           """, returnStatus: true
 
           if (exit_code != 0 && exit_code != 3){
