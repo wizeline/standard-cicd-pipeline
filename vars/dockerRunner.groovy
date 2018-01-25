@@ -71,7 +71,7 @@ def call(body) {
 
           // Call the buidler container
           exit_code = sh script: """
-          $docker_bin rmi -f $dockerRegistry/$dockerImageName || true
+          $docker_bin pull $dockerRegistry/$dockerImageName || true
           docker_id=\$($docker_bin create $dockerRegistry/$dockerImageName:$dockerImageTag)
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
 
@@ -82,7 +82,7 @@ def call(body) {
           // Ensure every exited container has been removed
           sh script: """
           containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
-          [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f $dockerRegistry/$dockerImageName || exit 0
+          [ -n "\$containers" ] && $docker_bin rm -f \$containers || exit 0
           """, returnStatus: true
 
           if (exit_code != 0 && exit_code != 3){

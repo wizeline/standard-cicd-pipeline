@@ -99,6 +99,7 @@ def call(body) {
                          usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
 
           def workspace = pwd()
+          def job_as_service_image = "devops.wize.mx:5000/jobs-as-a-service"
 
           // Using a load balancer get the ip of a dockerdaemon and keep it for
           // future use.
@@ -127,8 +128,8 @@ def call(body) {
           // Call the buidler container
           exit_code = sh script: """
           env | sort | grep -E \"DOCKER|NO_TAG_CHECK\" > .env
-          $docker_bin rmi -f devops.wize.mx:5000/jobs-as-a-service || true
-          docker_id=\$($docker_bin create --env-file .env devops.wize.mx:5000/jobs-as-a-service /build)
+          $docker_bin pull $job_as_service_image || true
+          docker_id=\$($docker_bin create --env-file .env $job_as_service_image /build)
           $docker_bin cp $workspace/$dockerSourceRelativePath/. \$docker_id:/source
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
           rm .env
@@ -140,7 +141,7 @@ def call(body) {
           // Ensure every exited container has been removed
           sh script: """
           containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
-          [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f devops.wize.mx:5000/jobs-as-a-service || exit 0
+          [ -n "\$containers" ] && $docker_bin rm -f \$containers || exit 0
           """, returnStatus: true
 
           if (exit_code != 0 && exit_code != 3){
