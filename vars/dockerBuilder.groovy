@@ -131,7 +131,7 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
           sh "$docker_bin version"
 
           sh "$docker_bin login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD devops.wize.mx:5000"
-          sh "env | sort"
+
           // Call the buidler container
           exit_code = sh script: """
           set +e
