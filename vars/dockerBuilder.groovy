@@ -127,6 +127,8 @@ def call(body) {
 
           // Call the buidler container
           exit_code = sh script: """
+          set +e
+          
           env | sort | grep -E \"DOCKER|NO_TAG_CHECK\" > .env
           $docker_bin pull $job_as_service_image || true
           docker_id=\$($docker_bin create --env-file .env $job_as_service_image /build)
