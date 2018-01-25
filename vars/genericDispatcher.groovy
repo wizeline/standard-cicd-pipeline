@@ -131,30 +131,28 @@ def call(body) {
     }
   }
 
+  parallel tasks
+
   if (is_main_branch()) {
-    tasks["build_image"] = {
-      stage("build-image:") {
-        dockerBuilder {
-            gitRepoUrl = jobGitRepoUrl
-            gitCredentialsId = jobGitCredentialsId
-            gitSha  = jobGitShaCommit
-            disableSubmodules = jobDisableSubmodules
+    stage("build-image:") {
+      dockerBuilder {
+          gitRepoUrl = jobGitRepoUrl
+          gitCredentialsId = jobGitCredentialsId
+          gitSha  = jobGitShaCommit
+          disableSubmodules = jobDisableSubmodules
 
-            dockerImageName = jobDockerImageName
-            dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-            slackChannelName = jobSlackChannelName
+          dockerImageName = jobDockerImageName
+          dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          slackChannelName = jobSlackChannelName
 
-            dockerSourceRelativePath = jobDockerSourceRelativePath
+          dockerSourceRelativePath = jobDockerSourceRelativePath
 
-            dockerDaemonHost = jobDockerDaemonHost
-            jenkinsNode = jobJenkinsNode
-        }
-        return_hash["build-image"] = "success"
+          dockerDaemonHost = jobDockerDaemonHost
+          jenkinsNode = jobJenkinsNode
       }
+      return_hash["build-image"] = "success"
     }
   }
-
-  parallel tasks
 
   return return_hash
 
