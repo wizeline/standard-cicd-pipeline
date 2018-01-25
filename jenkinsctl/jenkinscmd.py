@@ -16,7 +16,7 @@ def create_app_flow():
     params["slack_channel_name"] = click.prompt(
       'Enter the slack_channel_name', default="jenkins")
 
-    click.echo("\nA Jenkins proyect will be created with these params:")
+    click.echo("\nA Jenkins project will be created with these params:")
     click.echo(f" - name: {name}")
     for k, v in params.items():
         click.echo(f" - {k}: {v}")
@@ -27,8 +27,34 @@ def create_app_flow():
     gaf.create()
 
 
-def create_jenkins_flow():
-    pass
+def create_k8s_deployer_flow():
+    params = {}
+    name = click.prompt('Enter your project name')
+    params["k8s_env_tag"] = click.prompt(
+      'Enter the environment name (develop, staging, production)')
+    params["k8s_context"] = click.prompt(
+      'Enter the k8s context')
+    params["k8s_namespace"] = click.prompt(
+      'Enter the k8s namespace')
+    params["k8s_deployment_name"] = click.prompt(
+      'Enter the k8s deployment_name')
+    params["docker_image_name"] = click.prompt(
+      'Enter the docker image_name')
+    params["k8s_credentials_id"] = click.prompt(
+      'Enter the k8s credentials_id')
+    params["slack_channel_name"] = click.prompt(
+      'Enter the slack_channel_name', default="jenkins")
+
+    click.echo("\nA Jenkins project will be created with these params:")
+    click.echo(f" - name: {name}")
+    for k, v in params.items():
+        click.echo(f" - {k}: {v}")
+    if not click.confirm("\nDo you want to continue?", abort=True):
+        click.echo("Aborted...")
+        return
+    kdf = jenkins_job.KubernetesDeployerFlow(prefix=name)
+    kdf.set_parameters(params)
+    kdf.create()
 
 
 @click.group()
@@ -60,7 +86,11 @@ def create(ctx, jenkins_url, jenkins_user, jenkins_token, job_type):
     if job_type == "app-flow":
         create_app_flow()
         return
-    click.echo("Available job types: app-flow")
+
+    if job_type == "k8s-deployer":
+        create_k8s_deployer_flow()
+        return
+    click.echo("Available job types: app-flow, k8s-deployer")
 
 
 if __name__ == '__main__':

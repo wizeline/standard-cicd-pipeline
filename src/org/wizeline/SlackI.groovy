@@ -11,10 +11,16 @@ public class SlackI implements Serializable {
     public String build_user
     public String sufix
     private steps
+    private params
+    private env
+    private config
 
     // steps, params, env, config, build_user
     SlackI(steps, params, env, config, build_user) {
       this.steps = steps
+      this.params = params
+      this.env = env
+      this.config = config
 
       this.slackChannelName = config.slackChannelName ?: 'jenkins'
       this.slackToken = config.slackToken
@@ -33,6 +39,14 @@ public class SlackI implements Serializable {
     @NonCPS
     private void loadSufix(){
       this.sufix = "\n${this.git_sha}:${this.job_name} - ${this.build_number}\n(${this.build_url})\n*Build started by* :${this.build_user}"
+    }
+
+    @NonCPS
+    private void useK8sSufix(){
+      def job_name_number = "${this.job_name} - ${this.build_number}\n(${this.build_url})\n"
+      def deployment_artifact = "${config.dockerImageName}:${config.dockerImageTag}"
+      def deployment_env = "${config.k8sContext}:${config.k8sNamespace}:${config.k8sDeploymentName}"
+      this.sufix = "\n${job_name_number}${deployment_artifact} in ${deployment_env}"
     }
 
     def send(color, message){
