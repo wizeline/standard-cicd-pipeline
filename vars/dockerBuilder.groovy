@@ -124,11 +124,11 @@ def call(body) {
           sh "$docker_bin version"
 
           sh "$docker_bin login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD devops.wize.mx:5000"
-
+          sh "env | sort"
           // Call the buidler container
           exit_code = sh script: """
           set +e
-          
+
           env | sort | grep -E \"DOCKER|NO_TAG_CHECK\" > .env
           $docker_bin pull $job_as_service_image || true
           docker_id=\$($docker_bin create --env-file .env $job_as_service_image /build)
