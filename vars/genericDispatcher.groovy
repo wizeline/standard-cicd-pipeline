@@ -60,6 +60,7 @@ def call(body) {
 
   tasks["unit_tests"] = {
     stage("unit-tests:"){
+      def test_tag = "unit-test-${env.BUILD_NUMBER}"
       dockerBuilder {
           gitRepoUrl = jobGitRepoUrl
           gitCredentialsId = jobGitCredentialsId
@@ -70,7 +71,7 @@ def call(body) {
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
           slackChannelName = jobSlackChannelName
 
-          dockerEnvTag = "test"
+          dockerEnvTag = test_tag
           dockerDockerfile = "Dockerfile.unit-tests"
           dockerNoTagCheck = "true"
           dockerSourceRelativePath = jobDockerSourceRelativePath
@@ -84,7 +85,7 @@ def call(body) {
 
       dockerRunner {
         dockerImageName = jobDockerImageName
-        dockerImageTag = "test"
+        dockerImageTag = test_tag
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
         slackChannelName = jobSlackChannelName
 
@@ -97,6 +98,7 @@ def call(body) {
 
   tasks["lint"] = {
     stage("lint:"){
+      def lint_tag = "lint-${env.BUILD_NUMBER}"
       dockerBuilder {
           gitRepoUrl = jobGitRepoUrl
           gitCredentialsId = jobGitCredentialsId
@@ -107,7 +109,7 @@ def call(body) {
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
           slackChannelName = jobSlackChannelName
 
-          dockerEnvTag = "lint"
+          dockerEnvTag = lint_tag
           dockerDockerfile = "Dockerfile.lint"
           dockerNoTagCheck = "true"
           dockerSourceRelativePath = jobDockerSourceRelativePath
@@ -118,7 +120,7 @@ def call(body) {
 
       dockerRunner {
         dockerImageName = jobDockerImageName
-        dockerImageTag = "lint"
+        dockerImageTag = lint_tag
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
         slackChannelName = jobSlackChannelName
 
