@@ -13,6 +13,7 @@ def call(body) {
 
   def config = [:]
   def return_hash = [:]
+  def tasks = [:]
 
   if (body) {
     body.resolveStrategy = Closure.DELEGATE_FIRST
@@ -57,72 +58,80 @@ def call(body) {
     }
   }
 
-  stage("unit-tests:"){
-    dockerBuilder {
-        gitRepoUrl = jobGitRepoUrl
-        gitCredentialsId = jobGitCredentialsId
-        gitSha  = jobGitShaCommit
-        disableSubmodules = jobDisableSubmodules
+  tasks["unit_tests"] = {
+    stage("unit-tests:"){
+      def test_tag = "unit-test-${env.BUILD_NUMBER}"
+      dockerBuilder {
+          gitRepoUrl = jobGitRepoUrl
+          gitCredentialsId = jobGitCredentialsId
+          gitSha  = jobGitShaCommit
+          disableSubmodules = jobDisableSubmodules
 
+          dockerImageName = jobDockerImageName
+          dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          slackChannelName = jobSlackChannelName
+
+          dockerEnvTag = test_tag
+          dockerDockerfile = "Dockerfile.unit-tests"
+          dockerNoTagCheck = "true"
+          dockerSourceRelativePath = jobDockerSourceRelativePath
+
+          // dockerDaemonUrl vs dockerDaemonHost
+          // dockerDaemonUrl: will select a dockerd from a elb
+          // dockerDaemonHost: uses specific dockerd
+          dockerDaemonHost = jobDockerDaemonHost
+          jenkinsNode = jobJenkinsNode
+      }
+
+      dockerRunner {
         dockerImageName = jobDockerImageName
+        dockerImageTag = test_tag
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
         slackChannelName = jobSlackChannelName
 
-        dockerEnvTag = "test"
-        dockerDockerfile = "Dockerfile.unit-tests"
-        dockerNoTagCheck = "true"
-        dockerSourceRelativePath = jobDockerSourceRelativePath
-
-        // dockerDaemonUrl vs dockerDaemonHost
-        // dockerDaemonUrl: will select a dockerd from a elb
-        // dockerDaemonHost: uses specific dockerd
         dockerDaemonHost = jobDockerDaemonHost
         jenkinsNode = jobJenkinsNode
+      }
+      return_hash["unit-tests"] = "success"
     }
-
-    dockerRunner {
-      dockerImageName = jobDockerImageName
-      dockerImageTag = "test"
-      dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-      slackChannelName = jobSlackChannelName
-
-      dockerDaemonHost = jobDockerDaemonHost
-      jenkinsNode = jobJenkinsNode
-    }
-    return_hash["unit-tests"] = "success"
   }
 
-  stage("lint:"){
-    dockerBuilder {
-        gitRepoUrl = jobGitRepoUrl
-        gitCredentialsId = jobGitCredentialsId
-        gitSha  = jobGitShaCommit
-        disableSubmodules = jobDisableSubmodules
+  tasks["lint"] = {
+    stage("lint:"){
+      def lint_tag = "lint-${env.BUILD_NUMBER}"
+      dockerBuilder {
+          gitRepoUrl = jobGitRepoUrl
+          gitCredentialsId = jobGitCredentialsId
+          gitSha  = jobGitShaCommit
+          disableSubmodules = jobDisableSubmodules
 
+          dockerImageName = jobDockerImageName
+          dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          slackChannelName = jobSlackChannelName
+
+          dockerEnvTag = lint_tag
+          dockerDockerfile = "Dockerfile.lint"
+          dockerNoTagCheck = "true"
+          dockerSourceRelativePath = jobDockerSourceRelativePath
+
+          dockerDaemonHost = jobDockerDaemonHost
+          jenkinsNode = jobJenkinsNode
+      }
+
+      dockerRunner {
         dockerImageName = jobDockerImageName
+        dockerImageTag = lint_tag
         dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
         slackChannelName = jobSlackChannelName
 
-        dockerEnvTag = "lint"
-        dockerDockerfile = "Dockerfile.lint"
-        dockerNoTagCheck = "true"
-        dockerSourceRelativePath = jobDockerSourceRelativePath
-
         dockerDaemonHost = jobDockerDaemonHost
         jenkinsNode = jobJenkinsNode
+      }
+      return_hash["lint"] = "success"
     }
-
-    dockerRunner {
-      dockerImageName = jobDockerImageName
-      dockerImageTag = "lint"
-      dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-      slackChannelName = jobSlackChannelName
-
-      dockerDaemonHost = jobDockerDaemonHost
-      jenkinsNode = jobJenkinsNode
-    }
-    return_hash["lint"] = "success"
   }
+
+  parallel tasks
 
   if (is_main_branch()) {
     stage("build-image:") {
