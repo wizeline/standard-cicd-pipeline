@@ -15,6 +15,9 @@ public class SlackI implements Serializable {
     // steps, params, env, config, build_user
     SlackI(steps, params, env, config, build_user) {
       this.steps = steps
+      this.params = params
+      this.env = env
+      this.config = config
 
       this.slackChannelName = config.slackChannelName ?: 'jenkins'
       this.slackToken = config.slackToken
