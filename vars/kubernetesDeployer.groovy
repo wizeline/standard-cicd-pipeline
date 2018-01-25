@@ -143,11 +143,8 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
             echo "SUCCESS"
             currentBuild.result = 'SUCCESS'
             slack_i.send("good", "kubernetesDeployer *SUCCESS*")
-           }
-
           }
       }
-
     } catch (err) {
       println err
       currentBuild.result = 'FAILURE'
