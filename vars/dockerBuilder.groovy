@@ -108,15 +108,23 @@ def call(body) {
           }
           dockerDaemon = "tcp://${dockerDaemonHost}:${dockerDaemonPort}"
 
-          env.DOCKER_REGISTRY = dockerRegistry
-          env.DOCKER_IMAGE_NAME = dockerImageName
-          env.DOCKER_DOCKERFILE_ABS_PATH = dockerDockerfileAbsolutePath
-          env.DOCKER_DOCKERFILE = dockerDockerfile
-          env.DOCKER_ENV_TAG = dockerEnvTag
-          env.NO_TAG_CHECK = dockerNoTagCheck
-          env.DOCKER_COMMIT_TAG = (dockerNoTagCheck == "true") ? dockerEnvTag : gitSha
-          env.DOCKER_TLS_VERIFY = ""
-          env.DOCKER_DAEMON_URL = dockerDaemon
+          def dockerCommitTag = (dockerNoTagCheck == "true") ? dockerEnvTag : gitSha
+
+          env_vars = """DOCKER_REGISTRY=$dockerRegistry
+DOCKER_IMAGE_NAME=$dockerImageName
+DOCKER_DOCKERFILE_ABS_PATH=$dockerDockerfileAbsolutePath
+DOCKER_DOCKERFILE=$dockerDockerfile
+DOCKER_ENV_TAG=$dockerEnvTag
+NO_TAG_CHECK=$dockerNoTagCheck
+DOCKER_COMMIT_TAG=$dockerCommitTag
+DOCKER_TLS_VERIFY=""
+DOCKER_DAEMON_URL=$dockerDaemon
+DOCKER_REGISTRY_PASSWORD=$DOCKER_REGISTRY_PASSWORD
+DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
+"""
+
+          writeFile file: ".env"
+                    text: env_vars
 
           echo "Using remote docker daemon: ${dockerDaemon}"
           docker_bin="docker -H $dockerDaemon"
@@ -129,7 +137,7 @@ def call(body) {
           exit_code = sh script: """
           set +e
 
-          env | sort | grep -E \"DOCKER|NO_TAG_CHECK\" > .env
+          # env | sort | grep -E \"DOCKER|NO_TAG_CHECK\" > .env
           $docker_bin pull $job_as_service_image || true
           docker_id=\$($docker_bin create --env-file .env $job_as_service_image /build)
           $docker_bin cp $workspace/$dockerSourceRelativePath/. \$docker_id:/source
