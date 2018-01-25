@@ -11,7 +11,7 @@ def call(body) {
     body()
   }
 
-  echo "dockerBuilder.groovy"
+  echo "kubernetesDeployer.groovy"
   print config
 
   // steps, params, env, config, build_user
