@@ -39,3 +39,7 @@ Shared Library for jenkins standar pipelines.
 # Architecture Diagram for jenkins-dockerds
 
 ![jenkins-dockerds-architecture](docs/jenkins-ci-docker-arch.png)
+
+# References
+
+[Continuous Integration Pipeline Technical Specification](https://docs.google.com/document/d/1QeNk6OREJXRZTiz7Fq46wh3gRA-dA6O9VeqRybrtdXc/edit)

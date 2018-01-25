@@ -36,26 +36,6 @@ def call(body) {
     error 'You must provide a dockerRegistryCredentialsId'
   }
 
-  if (!config.tfAwsRegion) {
-    error 'You must provide a tfAwsRegion'
-  }
-
-  if (!config.tfAwsBackendBucketName) {
-    error 'You must provide a tfAwsBackendBucketName'
-  }
-
-  if (!config.tfAwsBackendBucketRegion) {
-    error 'You must provide a tfAwsBackendBucketRegion'
-  }
-
-  if (!config.tfAwsBackendBucketKeyPath) {
-    error 'You must provide a tfAwsBackendBucketKeyPath'
-  }
-
-  if (!config.tfAwsAccessCredentialsId) {
-    error 'You must provide a tfAwsAccessCredentialsId'
-  }
-
   def slackChannelName = config.slackChannelName ?: 'jenkins'
   def slackToken = config.slackToken
   def muteSlack = config.muteSlack ?: 'false'
@@ -66,15 +46,10 @@ def call(body) {
   def gitSha = config.gitSha
   def gitBranch
 
-  def tfSourceRelativePath = config.tfSourceRelativePath ?: '.'
-  def tfCommand = config.tfCommand ?: '/plan.sh'
-  def tfAwsAccessKeyID = config.tfAwsAccessKeyID //
-  def tfAwsSecretAccessKey = config.tfAwsSecretAccessKey //
-  def tfAwsAccessCredentialsId = config.tfAwsAccessCredentialsId
-  def tfAwsRegion = config.tfAwsRegion
-  def tfAwsBackendBucketName = config.tfAwsBackendBucketName
-  def tfAwsBackendBucketRegion = config.tfAwsBackendBucketRegion
-  def tfAwsBackendBucketKeyPath = config.tfAwsBackendBucketKeyPath
+  def envsRegExp = config.envsRegExp ?: ""
+  def dockerWorkspace = config.dockerWorkspace ?: "/"
+  def dockerCommand = config.dockerCommand ?: ""
+  // dockerInit
 
   def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: ''
   // For service discovery only
@@ -109,16 +84,19 @@ def call(body) {
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
 
-        println config.tfVars
-        if (config.tfVars) {
+        println config.dockerInit
+        if (config.dockerInit) {
           sh """
-          cat <<EOF > $tfSourceRelativePath/terraform.tfvars
-          ${config.tfVars}
-EOF"""
+          cat <<EOF > init.sh
+${config.dockerInit}
+EOF
+chmod +x init.sh
+"""
+
         }
       }
 
-      stage('RunTerraformContainer'){
+      stage('RunSlaveContainer'){
 
         withCredentials([
           [
@@ -126,14 +104,9 @@ EOF"""
             credentialsId: dockerRegistryCredentialsId,
             passwordVariable: 'DOCKER_REGISTRY_PASSWORD',
             usernameVariable: 'DOCKER_REGISTRY_USERNAME'
-          ],
-          [
-            $class: 'UsernamePasswordMultiBinding',
-            credentialsId: tfAwsAccessCredentialsId,
-            passwordVariable: 'AWS_TF_PASSWORD',
-            usernameVariable: 'AWS_TF_USERNAME'
           ]
         ]) {
+
 
           def workspace = pwd()
 
@@ -146,13 +119,6 @@ EOF"""
 
           env.DOCKER_TLS_VERIFY = ""
 
-          env.AWS_ACCESS_KEY_ID = AWS_TF_USERNAME
-          env.AWS_SECRET_ACCESS_KEY = AWS_TF_PASSWORD
-          env.AWS_DEFAULT_REGION = tfAwsRegion
-          env.AWS_TF_BACKEND_BUCKET = tfAwsBackendBucketName
-          env.AWS_TF_BACKEND_REGION = tfAwsBackendBucketRegion
-          env.AWS_TF_BACKEND_KEY_PATH = tfAwsBackendBucketKeyPath
-
           echo "Using remote docker daemon: ${dockerDaemon}"
           docker_bin="docker -H $dockerDaemon"
 
@@ -160,12 +126,13 @@ EOF"""
 
           sh "$docker_bin login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD devops.wize.mx:5000"
 
-          // Call the buidler container
+          // Call the runner container
           exit_code = sh script: """
-          env | sort | grep -E \"AWS_\" > .env
+          env | sort | grep -E \"$envsRegExp\" > .env
+
           $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || true
-          docker_id=\$($docker_bin create --env-file .env $dockerRegistry/$dockerImageName:$dockerImageTag $tfCommand)
-          $docker_bin cp $workspace/$tfSourceRelativePath/. \$docker_id:/project
+          docker_id=\$($docker_bin create --env-file .env $dockerRegistry/$dockerImageName:$dockerImageTag $dockerCommand)
+          $docker_bin cp $workspace/. \$docker_id:$dockerWorkspace
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
           rm .env
 
@@ -174,10 +141,11 @@ EOF"""
           """, returnStatus: true
 
           // Ensure every exited container has been removed
-          sh script: """
-          containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
-          [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || exit 0
-          """, returnStatus: true
+          // temporary disable
+          // sh script: """
+          // containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
+          // [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || exit 0
+          // """, returnStatus: true
 
           return exit_code
         }
