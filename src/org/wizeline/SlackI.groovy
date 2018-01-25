@@ -35,6 +35,14 @@ public class SlackI implements Serializable {
       this.sufix = "\n${this.git_sha}:${this.job_name} - ${this.build_number}\n(${this.build_url})\n*Build started by* :${this.build_user}"
     }
 
+    @NonCPS
+    private void useK8sSufix(){
+      job_name_number = "${this.job_name} - ${this.build_number}\n(${this.build_url})\n"
+      deployment_artifact = "${config.dockerImageName}:${config.dockerImageTag}"
+      deployment_env = "${config.k8sContext}:${config.k8sNamespace}:${config.k8sDeploymentName}"
+      this.sufix = "\n${job_name_number}${deployment_artifact} in ${deployment_env}"
+    }
+
     def send(color, message){
       if (this.slackChannelName && !this.muteSlack) {
         this.steps.slackSend channel: "#${this.slackChannelName}",
