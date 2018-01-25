@@ -11,6 +11,9 @@ public class SlackI implements Serializable {
     public String build_user
     public String sufix
     private steps
+    private params
+    private env
+    private config
 
     // steps, params, env, config, build_user
     SlackI(steps, params, env, config, build_user) {
