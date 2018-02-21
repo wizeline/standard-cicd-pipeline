@@ -33,6 +33,7 @@ def call(body) {
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
   def jobGitShaNoOrigin = jobGitSha//.replace("origin/", "")
   def jobDockerDaemonHost = config.jobDockerDaemonHost
+  def jobDockerDaemonPort = config.dockerDaemonPort ?: '4243'
   def jobJenkinsNode = config.jobJenkinsNode
 
   def jobGitBranch
@@ -60,7 +61,7 @@ def call(body) {
 
   tasks["unit_tests"] = {
     stage("unit-tests:"){
-      def test_tag = "unit-test-${env.BUILD_NUMBER}"
+      def test_tag = "unit-test"
       dockerBuilder {
           gitRepoUrl = jobGitRepoUrl
           gitCredentialsId = jobGitCredentialsId
@@ -80,6 +81,7 @@ def call(body) {
           // dockerDaemonUrl: will select a dockerd from a elb
           // dockerDaemonHost: uses specific dockerd
           dockerDaemonHost = jobDockerDaemonHost
+          dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
       }
 
@@ -90,6 +92,7 @@ def call(body) {
         slackChannelName = jobSlackChannelName
 
         dockerDaemonHost = jobDockerDaemonHost
+        dockerDaemonPort = jobDockerDaemonPort
         jenkinsNode = jobJenkinsNode
       }
       return_hash["unit-tests"] = "success"
@@ -98,7 +101,7 @@ def call(body) {
 
   tasks["lint"] = {
     stage("lint:"){
-      def lint_tag = "lint-${env.BUILD_NUMBER}"
+      def lint_tag = "lint"
       dockerBuilder {
           gitRepoUrl = jobGitRepoUrl
           gitCredentialsId = jobGitCredentialsId
@@ -115,6 +118,7 @@ def call(body) {
           dockerSourceRelativePath = jobDockerSourceRelativePath
 
           dockerDaemonHost = jobDockerDaemonHost
+          dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
       }
 
@@ -125,6 +129,7 @@ def call(body) {
         slackChannelName = jobSlackChannelName
 
         dockerDaemonHost = jobDockerDaemonHost
+        dockerDaemonPort = jobDockerDaemonPort
         jenkinsNode = jobJenkinsNode
       }
       return_hash["lint"] = "success"
@@ -148,6 +153,7 @@ def call(body) {
           dockerSourceRelativePath = jobDockerSourceRelativePath
 
           dockerDaemonHost = jobDockerDaemonHost
+          dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
       }
       return_hash["build-image"] = "success"
