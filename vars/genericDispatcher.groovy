@@ -104,7 +104,7 @@ def call(body) {
         // mark stage as not done
         return_hash["unit-tests"] = "not-run"
         echo "UNSTABLE"
-        currentBuild.result = 'UNSTABLE'
+        currentBuild.result = 'SUCCESS'
       }
     }
   }
@@ -148,7 +148,7 @@ def call(body) {
         // mark stage as not done
         return_hash["lint"] = "not-run"
         echo "UNSTABLE"
-        currentBuild.result = 'UNSTABLE'
+        currentBuild.result = 'SUCCESS'
       }
     }
   }
