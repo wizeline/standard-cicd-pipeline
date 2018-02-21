@@ -102,6 +102,7 @@ def call(body) {
         return_hash["unit-tests"] = "success"
       } else {
         // mark stage as not done
+        return_hash["unit-tests"] = "not-run"
         echo "UNSTABLE"
         currentBuild.result = 'UNSTABLE'
       }
@@ -145,6 +146,7 @@ def call(body) {
         return_hash["lint"] = "success"
       } else {
         // mark stage as not done
+        return_hash["lint"] = "not-run"
         echo "UNSTABLE"
         currentBuild.result = 'UNSTABLE'
       }
@@ -152,6 +154,14 @@ def call(body) {
   }
 
   parallel tasks
+
+  // If unit-test or lint was skipped, handle success
+  if (
+    return_hash["unit-tests"] == "success" && return_hash["lint"] == "not-run" ||
+    return_hash["lint"] == "success" && return_hash["unit-tests"] == "not-run"){
+    echo "SUCCESS"
+    currentBuild.result = 'SUCCESS'
+  }
 
   if (is_main_branch()) {
     stage("build-image:") {
