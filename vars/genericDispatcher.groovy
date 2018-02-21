@@ -36,6 +36,9 @@ def call(body) {
   def jobDockerDaemonPort = config.dockerDaemonPort ?: '4243'
   def jobJenkinsNode = config.jobJenkinsNode
 
+  def disableLint = config.disableLint ?: 'false'
+  def disableUnitTests = config.disableUnitTests ?: 'false'
+
   def jobGitBranch
   def jobGitShaCommit
 
@@ -61,78 +64,90 @@ def call(body) {
 
   tasks["unit_tests"] = {
     stage("unit-tests:"){
-      def test_tag = "unit-test"
-      dockerBuilder {
-          gitRepoUrl = jobGitRepoUrl
-          gitCredentialsId = jobGitCredentialsId
-          gitSha  = jobGitShaCommit
-          disableSubmodules = jobDisableSubmodules
+      if (disableUnitTests != 'true'){
+        def test_tag = "unit-test"
+        dockerBuilder {
+            gitRepoUrl = jobGitRepoUrl
+            gitCredentialsId = jobGitCredentialsId
+            gitSha  = jobGitShaCommit
+            disableSubmodules = jobDisableSubmodules
 
+            dockerImageName = jobDockerImageName
+            dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+            slackChannelName = jobSlackChannelName
+
+            dockerEnvTag = test_tag
+            dockerDockerfile = "Dockerfile.unit-tests"
+            dockerNoTagCheck = "true"
+            dockerSourceRelativePath = jobDockerSourceRelativePath
+
+            // dockerDaemonUrl vs dockerDaemonHost
+            // dockerDaemonUrl: will select a dockerd from a elb
+            // dockerDaemonHost: uses specific dockerd
+            dockerDaemonHost = jobDockerDaemonHost
+            dockerDaemonPort = jobDockerDaemonPort
+            jenkinsNode = jobJenkinsNode
+        }
+
+        dockerRunner {
           dockerImageName = jobDockerImageName
+          dockerImageTag = test_tag
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
           slackChannelName = jobSlackChannelName
 
-          dockerEnvTag = test_tag
-          dockerDockerfile = "Dockerfile.unit-tests"
-          dockerNoTagCheck = "true"
-          dockerSourceRelativePath = jobDockerSourceRelativePath
-
-          // dockerDaemonUrl vs dockerDaemonHost
-          // dockerDaemonUrl: will select a dockerd from a elb
-          // dockerDaemonHost: uses specific dockerd
           dockerDaemonHost = jobDockerDaemonHost
           dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
+        }
+        return_hash["unit-tests"] = "success"
+      } else {
+        // mark stage as not done
+        echo "UNSTABLE"
+        currentBuild.result = 'UNSTABLE'
       }
-
-      dockerRunner {
-        dockerImageName = jobDockerImageName
-        dockerImageTag = test_tag
-        dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-        slackChannelName = jobSlackChannelName
-
-        dockerDaemonHost = jobDockerDaemonHost
-        dockerDaemonPort = jobDockerDaemonPort
-        jenkinsNode = jobJenkinsNode
-      }
-      return_hash["unit-tests"] = "success"
     }
   }
 
   tasks["lint"] = {
     stage("lint:"){
-      def lint_tag = "lint"
-      dockerBuilder {
-          gitRepoUrl = jobGitRepoUrl
-          gitCredentialsId = jobGitCredentialsId
-          gitSha  = jobGitShaCommit
-          disableSubmodules = jobDisableSubmodules
+      if (disableLint != 'true'){
+        def lint_tag = "lint"
+        dockerBuilder {
+            gitRepoUrl = jobGitRepoUrl
+            gitCredentialsId = jobGitCredentialsId
+            gitSha  = jobGitShaCommit
+            disableSubmodules = jobDisableSubmodules
 
+            dockerImageName = jobDockerImageName
+            dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+            slackChannelName = jobSlackChannelName
+
+            dockerEnvTag = lint_tag
+            dockerDockerfile = "Dockerfile.lint"
+            dockerNoTagCheck = "true"
+            dockerSourceRelativePath = jobDockerSourceRelativePath
+
+            dockerDaemonHost = jobDockerDaemonHost
+            dockerDaemonPort = jobDockerDaemonPort
+            jenkinsNode = jobJenkinsNode
+        }
+
+        dockerRunner {
           dockerImageName = jobDockerImageName
+          dockerImageTag = lint_tag
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
           slackChannelName = jobSlackChannelName
-
-          dockerEnvTag = lint_tag
-          dockerDockerfile = "Dockerfile.lint"
-          dockerNoTagCheck = "true"
-          dockerSourceRelativePath = jobDockerSourceRelativePath
 
           dockerDaemonHost = jobDockerDaemonHost
           dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
+        }
+        return_hash["lint"] = "success"
+      } else {
+        // mark stage as not done
+        echo "UNSTABLE"
+        currentBuild.result = 'UNSTABLE'
       }
-
-      dockerRunner {
-        dockerImageName = jobDockerImageName
-        dockerImageTag = lint_tag
-        dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-        slackChannelName = jobSlackChannelName
-
-        dockerDaemonHost = jobDockerDaemonHost
-        dockerDaemonPort = jobDockerDaemonPort
-        jenkinsNode = jobJenkinsNode
-      }
-      return_hash["lint"] = "success"
     }
   }
 
