@@ -33,7 +33,11 @@ def call(body) {
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
   def jobGitShaNoOrigin = jobGitSha//.replace("origin/", "")
   def jobDockerDaemonHost = config.jobDockerDaemonHost
+  def jobDockerDaemonPort = config.dockerDaemonPort ?: '4243'
   def jobJenkinsNode = config.jobJenkinsNode
+
+  def disableLint = config.disableLint ?: 'false'
+  def disableUnitTests = config.disableUnitTests ?: 'false'
 
   def jobGitBranch
   def jobGitShaCommit
@@ -60,78 +64,104 @@ def call(body) {
 
   tasks["unit_tests"] = {
     stage("unit-tests:"){
-      def test_tag = "unit-test-${env.BUILD_NUMBER}"
-      dockerBuilder {
-          gitRepoUrl = jobGitRepoUrl
-          gitCredentialsId = jobGitCredentialsId
-          gitSha  = jobGitShaCommit
-          disableSubmodules = jobDisableSubmodules
+      if (disableUnitTests != 'true'){
+        def test_tag = "unit-test"
+        dockerBuilder {
+            gitRepoUrl = jobGitRepoUrl
+            gitCredentialsId = jobGitCredentialsId
+            gitSha  = jobGitShaCommit
+            disableSubmodules = jobDisableSubmodules
 
+            dockerImageName = jobDockerImageName
+            dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+            slackChannelName = jobSlackChannelName
+
+            dockerEnvTag = test_tag
+            dockerDockerfile = "Dockerfile.unit-tests"
+            dockerNoTagCheck = "true"
+            dockerSourceRelativePath = jobDockerSourceRelativePath
+
+            // dockerDaemonUrl vs dockerDaemonHost
+            // dockerDaemonUrl: will select a dockerd from a elb
+            // dockerDaemonHost: uses specific dockerd
+            dockerDaemonHost = jobDockerDaemonHost
+            dockerDaemonPort = jobDockerDaemonPort
+            jenkinsNode = jobJenkinsNode
+        }
+
+        dockerRunner {
           dockerImageName = jobDockerImageName
+          dockerImageTag = test_tag
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
           slackChannelName = jobSlackChannelName
 
-          dockerEnvTag = test_tag
-          dockerDockerfile = "Dockerfile.unit-tests"
-          dockerNoTagCheck = "true"
-          dockerSourceRelativePath = jobDockerSourceRelativePath
-
-          // dockerDaemonUrl vs dockerDaemonHost
-          // dockerDaemonUrl: will select a dockerd from a elb
-          // dockerDaemonHost: uses specific dockerd
           dockerDaemonHost = jobDockerDaemonHost
+          dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
+        }
+        return_hash["unit-tests"] = "success"
+      } else {
+        // mark stage as not done
+        return_hash["unit-tests"] = "not-run"
+        echo "UNSTABLE"
+        currentBuild.result = 'SUCCESS'
       }
-
-      dockerRunner {
-        dockerImageName = jobDockerImageName
-        dockerImageTag = test_tag
-        dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-        slackChannelName = jobSlackChannelName
-
-        dockerDaemonHost = jobDockerDaemonHost
-        jenkinsNode = jobJenkinsNode
-      }
-      return_hash["unit-tests"] = "success"
     }
   }
 
   tasks["lint"] = {
     stage("lint:"){
-      def lint_tag = "lint-${env.BUILD_NUMBER}"
-      dockerBuilder {
-          gitRepoUrl = jobGitRepoUrl
-          gitCredentialsId = jobGitCredentialsId
-          gitSha  = jobGitShaCommit
-          disableSubmodules = jobDisableSubmodules
+      if (disableLint != 'true'){
+        def lint_tag = "lint"
+        dockerBuilder {
+            gitRepoUrl = jobGitRepoUrl
+            gitCredentialsId = jobGitCredentialsId
+            gitSha  = jobGitShaCommit
+            disableSubmodules = jobDisableSubmodules
 
+            dockerImageName = jobDockerImageName
+            dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+            slackChannelName = jobSlackChannelName
+
+            dockerEnvTag = lint_tag
+            dockerDockerfile = "Dockerfile.lint"
+            dockerNoTagCheck = "true"
+            dockerSourceRelativePath = jobDockerSourceRelativePath
+
+            dockerDaemonHost = jobDockerDaemonHost
+            dockerDaemonPort = jobDockerDaemonPort
+            jenkinsNode = jobJenkinsNode
+        }
+
+        dockerRunner {
           dockerImageName = jobDockerImageName
+          dockerImageTag = lint_tag
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
           slackChannelName = jobSlackChannelName
 
-          dockerEnvTag = lint_tag
-          dockerDockerfile = "Dockerfile.lint"
-          dockerNoTagCheck = "true"
-          dockerSourceRelativePath = jobDockerSourceRelativePath
-
           dockerDaemonHost = jobDockerDaemonHost
+          dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
+        }
+        return_hash["lint"] = "success"
+      } else {
+        // mark stage as not done
+        return_hash["lint"] = "not-run"
+        echo "UNSTABLE"
+        currentBuild.result = 'SUCCESS'
       }
-
-      dockerRunner {
-        dockerImageName = jobDockerImageName
-        dockerImageTag = lint_tag
-        dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-        slackChannelName = jobSlackChannelName
-
-        dockerDaemonHost = jobDockerDaemonHost
-        jenkinsNode = jobJenkinsNode
-      }
-      return_hash["lint"] = "success"
     }
   }
 
   parallel tasks
+
+  // If unit-test or lint was skipped, handle success
+  if (
+    return_hash["unit-tests"] == "success" && return_hash["lint"] == "not-run" ||
+    return_hash["lint"] == "success" && return_hash["unit-tests"] == "not-run"){
+    echo "SUCCESS"
+    currentBuild.result = 'SUCCESS'
+  }
 
   if (is_main_branch()) {
     stage("build-image:") {
@@ -148,6 +178,7 @@ def call(body) {
           dockerSourceRelativePath = jobDockerSourceRelativePath
 
           dockerDaemonHost = jobDockerDaemonHost
+          dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
       }
       return_hash["build-image"] = "success"
