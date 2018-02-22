@@ -25,11 +25,37 @@ systemctl start docker
 systemctl enable docker.service
 systemctl start docker.service
 
+# Setup docker cleanup timer service
+cat <<EOF >> /etc/systemd/system/docker-cleanup.service
+[Unit]
+Description=Removes unused docker data
+
+[Service]
+Type=oneshot
+ExecStart=/bin/docker system prune -f
+EOF
+
+cat <<EOF >> /etc/systemd/system/docker-cleanup.timer
+[Unit]
+Description=Run docker-cleanup.service every 10 minutes
+
+[Timer]
+OnCalendar=daily
+AccuracySec=1h
+EOF
+
+systemctl start docker-cleanup.timer
+systemctl list-timers
+systemctl list-timers --all
+
+
 # Install docker-compose
 mkdir -p /opt/bin
 curl -L https://github.com/docker/compose/releases/download/1.17.1/docker-compose-`uname -s`-`uname -m` > /opt/bin/docker-compose
 chmod +x /opt/bin/docker-compose
 
+
+# Install Portainer
 mkdir -p /opt/portainer
 git clone https://github.com/portainer/portainer-compose.git /opt/portainer
 
@@ -86,28 +112,28 @@ cd /opt/portainer/ && /opt/bin/docker-compose up -d
 
 # -- Consul Node --
 
-# Ips
-PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-PRIVATE_IP_HIPHENS=$${PRIVATE_IP//./-}
-
-# Setup Consul
-mkdir -p /tmp/consul
-mkdir -p /etc/consul
-tee /etc/consul/server.json > /dev/null <<EOF
-{
-  "bind_addr": "$PRIVATE_IP",
-  "acl_datacenter":"us-east-2",
-  "datacenter":"us-east-2",
-  "acl_default_policy":"deny",
-  "acl_down_policy":"deny",
-  "acl_master_token":"${acl_master_token}",
-  "encrypt": "${consul_encrypt}",
-  "disable_remote_exec": true,
-  "disable_update_check": true,
-  "leave_on_terminate": true
-}
-EOF
+# # Ips
+# PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
+# PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+# PRIVATE_IP_HIPHENS=$${PRIVATE_IP//./-}
+#
+# # Setup Consul
+# mkdir -p /tmp/consul
+# mkdir -p /etc/consul
+# tee /etc/consul/server.json > /dev/null <<EOF
+# {
+#   "bind_addr": "$PRIVATE_IP",
+#   "acl_datacenter":"us-east-2",
+#   "datacenter":"us-east-2",
+#   "acl_default_policy":"deny",
+#   "acl_down_policy":"deny",
+#   "acl_master_token":"${acl_master_token}",
+#   "encrypt": "${consul_encrypt}",
+#   "disable_remote_exec": true,
+#   "disable_update_check": true,
+#   "leave_on_terminate": true
+# }
+# EOF
 
 # # Init a client
 # export CONSUL_SERVICE_HOST=internal-consul-elb.wize.mx
