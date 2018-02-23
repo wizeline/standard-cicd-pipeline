@@ -143,7 +143,7 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
           rm .env
 
-          [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE;
+          [ -n "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           exit 0
           """, returnStatus: true
 
@@ -153,7 +153,8 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
           [ -n "\$containers" ] && $docker_bin rm \$containers || exit 0
           """, returnStatus: true
 
-          if (exit_code != 0 && exit_code != 3){
+          TAG_ALREADY_EXIST_CODE = 3
+          if (exit_code != 0 && exit_code != TAG_ALREADY_EXIST_CODE){
             echo "FAILURE"
             currentBuild.result = 'FAILURE'
             if (config.slackChannelName && !muteSlack){

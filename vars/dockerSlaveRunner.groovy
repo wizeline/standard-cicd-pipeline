@@ -136,7 +136,7 @@ chmod +x init.sh
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
           rm .env
 
-          [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE;
+          [ -n "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           exit 0
           """, returnStatus: true
 

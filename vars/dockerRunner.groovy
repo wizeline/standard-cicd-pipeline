@@ -72,12 +72,12 @@ def call(body) {
           // Call the buidler container
           exit_code = sh script: """
           set +e
-          
+
           $docker_bin pull $dockerRegistry/$dockerImageName:$dockerImageTag || true
           docker_id=\$($docker_bin create $dockerRegistry/$dockerImageName:$dockerImageTag)
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
 
-          [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE;
+          [ -n "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           exit 0
           """, returnStatus: true
 
