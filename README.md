@@ -42,4 +42,8 @@ Shared Library for jenkins standar pipelines.
 
 # References
 
-[Continuous Integration Pipeline Technical Specification](https://docs.google.com/document/d/1QeNk6OREJXRZTiz7Fq46wh3gRA-dA6O9VeqRybrtdXc/edit)
+-   [Continuous Integration Pipeline Technical Specification](https://docs.google.com/document/d/1QeNk6OREJXRZTiz7Fq46wh3gRA-dA6O9VeqRybrtdXc/edit)
+-   [jenkins-jobs-as-service-py](https://phabricator.wizeline.com/diffusion/28/)
+-   [docker-images](https://github.com/wizeline/docker-images)
+-   [docker-base-images](https://github.com/wizeline/docker-base-images)
+-   [DevOps Roadmap - Engineering Tools & Standards](https://wizeline.atlassian.net/wiki/spaces/DFS/pages/185630724/DevOps+Roadmap+-+Engineering+Tools+Standards)
