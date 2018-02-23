@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import click
-import jenkins_job
+from jenkinsctl.flows import *
 
 
 def create_app_flow():
@@ -22,7 +24,7 @@ def create_app_flow():
         click.echo(f" - {k}: {v}")
     if not click.confirm("\nDo you want to continue?", abort=True):
         return
-    gaf = jenkins_job.GenericAppFlow(prefix=name)
+    gaf = GenericAppFlow(prefix=name)
     gaf.set_parameters(params)
     gaf.create()
 
@@ -52,7 +54,7 @@ def create_k8s_deployer_flow():
     if not click.confirm("\nDo you want to continue?", abort=True):
         click.echo("Aborted...")
         return
-    kdf = jenkins_job.KubernetesDeployerFlow(prefix=name)
+    kdf = KubernetesDeployerFlow(prefix=name)
     kdf.set_parameters(params)
     kdf.create()
 
