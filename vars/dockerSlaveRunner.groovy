@@ -1,5 +1,5 @@
 //#!Groovy
-import org.wizeline.DevaultValues
+import org.wizeline.DefaultValues
 
 def call(body) {
 
@@ -40,15 +40,15 @@ def call(body) {
   }
 
   // Slack info
-  def slackChannelName = config.slackChannelName ?: DevaultValues.defaultSlackChannelName
+  def slackChannelName = config.slackChannelName ?: DefaultValues.defaultSlackChannelName
   def slackToken       = config.slackToken
-  def muteSlack        = config.muteSlack ?: DevaultValues.defaultMuteSlack
+  def muteSlack        = config.muteSlack ?: DefaultValues.defaultMuteSlack
   muteSlack = (muteSlack == 'true')
 
   // Git Info
   def gitRepoUrl       = config.gitRepoUrl
-  def gitCredentialsId = config.gitCredentialsId ?: DevaultValues.defaultGitCredentialsId
-  def gitSha           = config.gitSha           ?: DevaultValues.defaultGitSha
+  def gitCredentialsId = config.gitCredentialsId ?: DefaultValues.defaultGitCredentialsId
+  def gitSha           = config.gitSha           ?: DefaultValues.defaultGitSha
   def gitBranch
 
   def envsRegExp = config.envsRegExp ?: ""
@@ -56,15 +56,15 @@ def call(body) {
   def dockerCommand = config.dockerCommand ?: ""
   // dockerInit
 
-  def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: DevaultValues.defaultDockerRegistryCredentialsId
-  def dockerRegistry  = config.dockerRegistry ?: DevaultValues.defaultDockerRegistry
+  def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: DefaultValues.defaultDockerRegistryCredentialsId
+  def dockerRegistry  = config.dockerRegistry ?: DefaultValues.defaultDockerRegistry
   def dockerImageName = config.dockerImageName
   def dockerImageTag  = config.dockerImageTag
 
   // For service discovery only
   def dockerDaemonHost = config.dockerDaemonHost
-  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DevaultValues.defaultDockerDaemonUrl
-  def dockerDaemonPort = config.dockerDaemonPort ?: DevaultValues.defaultDockerDaemonPort
+  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DefaultValues.defaultDockerDaemonUrl
+  def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
 
   def jenkinsNode = config.jenkinsNode

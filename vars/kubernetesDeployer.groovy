@@ -52,6 +52,7 @@ def call(body) {
   )
   slack_i.useK8sSufix()
 
+  // Validations
   if (!config.dockerRegistryCredentialsId) {
     error 'You must provide a dockerRegistryCredentialsId'
   }
@@ -82,12 +83,14 @@ def call(body) {
 
   def k8sNamespace = config.k8sNamespace ?: 'default'
 
-  def dockerRegistry = config.dockerRegistry ?: 'devops.wize.mx:5000'
+  def dockerRegistry  = config.dockerRegistry ?: DefaultValues.defaultDockerRegistry
 
-  def dockerDaemonUrl = config.dockerDaemonUrl ?: 'internal-docker-daemon-elb.wize.mx'
-  def dockerDaemonHost= config.dockerDaemonHost
-  def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
+  // For service discovery only
+  def dockerDaemonHost = config.dockerDaemonHost
+  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DefaultValues.defaultDockerDaemonUrl
+  def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
+
   def jenkinsNode = config.jenkinsNode
 
   slack_i.send("good", "kubernetesDeployer *START*")

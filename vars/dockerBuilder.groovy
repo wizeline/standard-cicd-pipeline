@@ -1,5 +1,5 @@
 //#!Groovy
-import org.wizeline.DevaultValues
+import org.wizeline.DefaultValues
 
 def call(body) {
 
@@ -36,31 +36,31 @@ def call(body) {
   }
 
   // Slack Info
-  def slackChannelName = config.slackChannelName ?: DevaultValues.defaultSlackChannelName
+  def slackChannelName = config.slackChannelName ?: DefaultValues.defaultSlackChannelName
   def slackToken       = config.slackToken
-  def muteSlack        = config.muteSlack ?: DevaultValues.defaultMuteSlack
+  def muteSlack        = config.muteSlack ?: DefaultValues.defaultMuteSlack
   muteSlack = (muteSlack == 'true')
 
   // Git Info
   def gitRepoUrl       = config.gitRepoUrl
-  def gitCredentialsId = config.gitCredentialsId ?: DevaultValues.defaultGitCredentialsId
-  def gitSha           = config.gitSha           ?: DevaultValues.defaultGitSha
+  def gitCredentialsId = config.gitCredentialsId ?: DefaultValues.defaultGitCredentialsId
+  def gitSha           = config.gitSha           ?: DefaultValues.defaultGitSha
   def gitBranch
 
   // Docker Image Info
   def dockerImageName             = config.dockerImageName
   def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId
-  def dockerRegistry              = config.dockerRegistry           ?: DevaultValues.defaultDockerRegistry
-  def dockerEnvTag                = config.dockerEnvTag             ?: DevaultValues.defaultDockerEnvTag
-  def dockerSourceRelativePath    = config.dockerSourceRelativePath ?: DevaultValues.defaultDockerSourceRelativePath
-  def dockerDockerfileAbsolutePath = config.dockerDockerfileAbsolutePath ?: DevaultValues.defaultDockerDockerfileAbsolutePath
-  def dockerDockerfile            = config.dockerDockerfile         ?: DevaultValues.defaultDockerDockerfile
-  def dockerNoTagCheck            = config.dockerNoTagCheck         ?: DevaultValues.defaultDockerNoTagCheck
+  def dockerRegistry              = config.dockerRegistry           ?: DefaultValues.defaultDockerRegistry
+  def dockerEnvTag                = config.dockerEnvTag             ?: DefaultValues.defaultDockerEnvTag
+  def dockerSourceRelativePath    = config.dockerSourceRelativePath ?: DefaultValues.defaultDockerSourceRelativePath
+  def dockerDockerfileAbsolutePath = config.dockerDockerfileAbsolutePath ?: DefaultValues.defaultDockerDockerfileAbsolutePath
+  def dockerDockerfile            = config.dockerDockerfile         ?: DefaultValues.defaultDockerDockerfile
+  def dockerNoTagCheck            = config.dockerNoTagCheck         ?: DefaultValues.defaultDockerNoTagCheck
 
   // For service discovery only
   def dockerDaemonHost = config.dockerDaemonHost
-  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DevaultValues.defaultDockerDaemonUrl
-  def dockerDaemonPort = config.dockerDaemonPort ?: DevaultValues.defaultDockerDaemonPort
+  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DefaultValues.defaultDockerDaemonUrl
+  def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
 
   def jenkinsNode = config.jenkinsNode

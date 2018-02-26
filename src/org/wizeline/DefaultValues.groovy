@@ -1,6 +1,6 @@
 package org.wizeline
 
-public class DevaultValues implements Serializable {
+public class DefaultValues implements Serializable {
   // Terraform
   public static defaultTerraformDockerRegistry              = "devops.wize.mx:5000"
   public static defaultTerraformDockerImageName             = "wize-terraform"

@@ -1,6 +1,6 @@
 //#!Groovy
 import org.wizeline.SlackI
-import org.wizeline.DevaultValues
+import org.wizeline.DefaultValues
 
 def is_main_branch(){
   return params.BRANCH == "origin/develop" ||
@@ -37,11 +37,11 @@ def call(body) {
   // Docker
   def jobDockerImageName             = params.DOCKER_IMAGE_NAME
   def jobDockerSourceRelativePath    = params.DOCKER_SOURCE_REL_PATH
-  def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: DevaultValues.defaultDockerRegistryCredentialsId
+  def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: DefaultValues.defaultDockerRegistryCredentialsId
 
   // Docker Daemon
   def jobDockerDaemonHost  = config.jobDockerDaemonHost
-  def jobDockerDaemonPort  = config.dockerDaemonPort ?: DevaultValues.defaultDockerDaemonPort
+  def jobDockerDaemonPort  = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
 
   // Slack
   def jobSlackChannelName  = params.SLACK_CHANNEL_NAME

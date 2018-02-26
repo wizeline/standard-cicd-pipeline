@@ -1,6 +1,6 @@
 //#!Groovy
 import org.wizeline.SlackI
-import org.wizeline.DevaultValues
+import org.wizeline.DefaultValues
 
 def callTerraform(_cmd, tf_configs) {
 
@@ -12,10 +12,10 @@ def callTerraform(_cmd, tf_configs) {
       gitCredentialsId = tf_configs.gitCredentialsId
       gitSha           = tf_configs.gitSha
 
-      dockerRegistry              = DevaultValues.defaultTerraformDockerRegistry
-      dockerImageName             = DevaultValues.defaultTerraformDockerImageName
-      dockerImageTag              = DevaultValues.defaultTerraformDockerImageTag
-      dockerRegistryCredentialsId = DevaultValues.defaultTerraformDockerRegistryCredentialsId
+      dockerRegistry              = DefaultValues.defaultTerraformDockerRegistry
+      dockerImageName             = DefaultValues.defaultTerraformDockerImageName
+      dockerImageTag              = DefaultValues.defaultTerraformDockerImageTag
+      dockerRegistryCredentialsId = DefaultValues.defaultTerraformDockerRegistryCredentialsId
 
       tfSourceRelativePath = tf_configs.tfSourceRelativePath
 
