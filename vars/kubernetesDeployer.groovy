@@ -28,6 +28,7 @@
 
 
 import org.wizeline.SlackI
+import org.wizeline.DefaultValues
 
 def call(body) {
 
