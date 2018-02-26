@@ -23,7 +23,7 @@
         <hudson.model.StringParameterDefinition>
           <name>GIT_CREDENTIALS_ID</name>
           <description></description>
-          <defaultValue>b9abf261-0552-45f2-972d-08f3800d3d4f</defaultValue>
+          <defaultValue>{{ git_credentials_id }}</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>DOCKER_IMAGE_NAME</name>
@@ -63,7 +63,6 @@
     <script>status = genericDispatcher {
     jobDockerDaemonHost = &quot;internal-docker.wize.mx&quot;
     jobJenkinsNode = &quot;devops1&quot;
-    disableSubmodules = &quot;true&quot;
 }
 println &quot;${status}&quot;
 

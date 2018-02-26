@@ -5,19 +5,26 @@ from jenkinsctl.utils import JobTemplate
 from jenkinsctl.definitions import ROOT_DIR, TEMPLATES_FOLDERS_DIR
 
 
-class KubernetesDeployerFlow(AbstractFlow):
+# This class is used to create:
+# - One project folder
+# - a terraform-control job
+class TerraformFlow(AbstractFlow):
+    generic_dispatcher = None
+    generic_dispatcher_trigger = None
+    terraform_control = None
     project_folder = None
-    k8s_deployer = None
-    k8s_trigger = None
     prefix = ""
     default_params = {
-        "k8s_credentials_id": "",
-        "k8s_context": "",
-        "k8s_namespace": "",
-        "k8s_deployment_name": "",
-        "k8s_env_tag": ".",
+        "git_repo_url": "",
+        "git_credentials_id": "",
+        "git_sha": "",
+        "tf_source_relative_path": "",
+        "tf_aws_access_credentials_id": "",
+        "tf_aws_region": "",
+        "tf_aws_backend_bucket_name": "",
+        "tf_aws_backend_bucket_region": "",
+        "tf_aws_backend_bucket_key_path": "",
         "slack_channel_name": "jenkins",
-        "docker_image_name": "",
         "git_standard_cicd_credentials_id":
             "b9abf261-0552-45f2-972d-08f3800d3d4f",
         "git_credentials_id": "b9abf261-0552-45f2-972d-08f3800d3d4f",
@@ -34,8 +41,7 @@ class KubernetesDeployerFlow(AbstractFlow):
     def _load_fields(self):
         self.load_j_server()
         self._load_project_folder()
-        self._load_k8s_deployer()
-        self._load_k8s_trigger()
+        self._load_terraform_control()
 
     def _load_project_folder(self):
         self.project_folder_name = f"{self.prefix}-folder"
@@ -45,27 +51,16 @@ class KubernetesDeployerFlow(AbstractFlow):
           template_file=f'{TEMPLATES_FOLDERS_DIR}/jenkins-folder.xml.j2',
           parameters=self.parameters)
 
-    def _load_k8s_deployer(self):
-        self.k8s_deployer_name = f"{self.prefix}-k8s-deployer"
-        self.k8s_deployer = JobTemplate(
+    def _load_terraform_control(self):
+        self.terraform_control_name = f"{self.prefix}-terraform-control"
+        self.terraform_control = JobTemplate(
           jenkins_object=self.j_server,
-          name=self.k8s_deployer_name,
-          template_file=f'{TEMPLATES_FOLDERS_DIR}/k8s-deployer.xml.j2',
-          parameters=self.parameters)
-
-    def _load_k8s_trigger(self):
-        environment = self.parameters['k8s_env_tag']
-        self.k8s_trigger_name = f"{self.prefix}-k8s-deploy-{environment}"
-        self.parameters["deployer_job"] = self.k8s_deployer_name
-        self.k8s_trigger = JobTemplate(
-          jenkins_object=self.j_server,
-          name=self.k8s_trigger_name,
-          template_file=f'{TEMPLATES_FOLDERS_DIR}/k8s-deployer-trigger.xml.j2',
+          name=self.terraform_control_name,
+          template_file=f'{TEMPLATES_FOLDERS_DIR}/terraform-control.xml.j2',
           parameters=self.parameters)
 
     def create(self):
         self.validate_params()
         self._load_fields()
         self.project_folder.create()
-        self.k8s_deployer.create(folder=self.project_folder_name)
-        self.k8s_trigger.create(folder=self.project_folder_name)
+        self.terraform_control.create(folder=self.project_folder_name)
