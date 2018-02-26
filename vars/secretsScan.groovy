@@ -1,4 +1,5 @@
 import org.wizeline.SlackI
+import org.wizeline.DefaultValues
 
 def call(body) {
 
@@ -21,6 +22,7 @@ def call(body) {
   def jobGitCredentialsId = params.GIT_CREDENTIALS_ID
   def jobGitSha           = params.GIT_SHA
 
+  config.disableSubmodules = config.disableSubmodules ?: DefaultValues.defaultDisableSubmodules
   def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
   println "disableSubmodules: ${jobDisableSubmodules}"
 

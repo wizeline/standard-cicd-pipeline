@@ -5,7 +5,7 @@ import org.wizeline.DefaultValues
 def callTerraform(_cmd, tf_configs) {
 
   return dockerTerraformRunner {
-      dockerDaemonUrl = tf_configs.dockerDaemonUrl
+      dockerDaemonHost = tf_configs.dockerDaemonHost
       jenkinsNode = tf_configs.jenkinsNode
 
       gitRepoUrl       = tf_configs.gitRepoUrl
@@ -163,7 +163,7 @@ def call(body) {
   tf_configs.gitCredentialsId = params.GIT_CREDENTIALS_ID
   tf_configs.gitSha           = params.GIT_SHA
 
-  tf_configs.dockerDaemonUrl = config.jobDockerDaemonHost
+  tf_configs.dockerDaemonHost = config.jobDockerDaemonHost
   tf_configs.jenkinsNode     = config.jobJenkinsNode
 
   def jobTfSourceRelativePath     = params.TF_SOURCE_RELATIVE_PATH ?: '.'

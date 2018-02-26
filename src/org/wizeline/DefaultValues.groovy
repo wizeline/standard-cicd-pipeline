@@ -25,4 +25,6 @@ public class DefaultValues implements Serializable {
 
   public static defaultMuteSlack = 'false'
 
+  public static defaultDisableSubmodules = "true"
+
 }

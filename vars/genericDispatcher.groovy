@@ -30,7 +30,7 @@ def call(body) {
   def jobGitCredentialsId  = params.GIT_CREDENTIALS_ID
   def jobGitSha            = params.BRANCH
   def jobGitShaNoOrigin    = jobGitSha
-  def jobDisableSubmodules = config.disableSubmodules
+  def jobDisableSubmodules = config.disableSubmodules ?: DefaultValues.defaultDisableSubmodules
   def jobGitBranch
   def jobGitShaCommit
 
