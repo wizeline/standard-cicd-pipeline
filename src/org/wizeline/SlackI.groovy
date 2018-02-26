@@ -22,7 +22,8 @@ public class SlackI implements Serializable {
       this.env = env
       this.config = config
 
-      this.slackChannelName = config.slackChannelName ?: 'jenkins'
+      def slackChannelName = params.SLACK_CHANNEL_NAME ?: 'jenkins'
+      this.slackChannelName = config.slackChannelName ?: slackChannelName
       this.slackToken = config.slackToken
       def tmpMuteSlack = config.muteSlack ?: 'false'
       this.muteSlack = (tmpMuteSlack == 'true')

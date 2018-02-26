@@ -1,4 +1,6 @@
 //#!Groovy
+import org.wizeline.DevaultValues
+
 def call(body) {
 
   def config = [:]
@@ -12,6 +14,7 @@ def call(body) {
   echo "dockerRunner.groovy"
   print config
 
+  // Validations
   if (!config.dockerImageName) {
     error 'You must provide a dockerImageName'
   }
@@ -24,20 +27,23 @@ def call(body) {
     error 'You must provide a dockerRegistryCredentialsId'
   }
 
-  def slackChannelName = config.slackChannelName ?: 'jenkins'
-  def slackToken = config.slackToken
-  def muteSlack = config.muteSlack ?: 'false'
+  // Slack info
+  def slackChannelName = config.slackChannelName ?: DevaultValues.defaultSlackChannelName
+  def slackToken       = config.slackToken
+  def muteSlack        = config.muteSlack ?: DevaultValues.defaultMuteSlack
   muteSlack = (muteSlack == 'true')
 
-  def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: ''
   // For service discovery only
-  def dockerDaemonUrl = config.dockerDaemonUrl ?: 'internal-docker-daemon-elb.wize.mx'
-  def dockerRegistry = config.dockerRegistry ?: 'devops.wize.mx:5000'
-  def dockerImageName = config.dockerImageName
-  def dockerImageTag = config.dockerImageTag
   def dockerDaemonHost = config.dockerDaemonHost
-  def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
+  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DevaultValues.defaultDockerDaemonUrl
+  def dockerDaemonPort = config.dockerDaemonPort ?: DevaultValues.defaultDockerDaemonPort
   def dockerDaemon
+
+  // Image Info
+  def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: DevaultValues.defaultDockerRegistryCredentialsId
+  def dockerRegistry   = config.dockerRegistry   ?: DevaultValues.defaultDockerRegistry
+  def dockerImageName  = config.dockerImageName
+  def dockerImageTag   = config.dockerImageTag
 
   def jenkinsNode = config.jenkinsNode
 
@@ -93,7 +99,7 @@ def call(body) {
             if (config.slackChannelName && !muteSlack){
               slackSend channel:"#${slackChannelName}",
                         color:'danger',
-                        message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
+                        message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
             }
             error("FAILURE - Run container returned non 0 exit code")
             return 1
@@ -104,7 +110,7 @@ def call(body) {
           if (config.slackChannelName && !muteSlack){
             slackSend channel:"#${slackChannelName}",
                       color:'good',
-                      message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
+                      message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
           }
         }
       }
@@ -113,7 +119,7 @@ def call(body) {
       if (config.slackChannelName && !muteSlack){
         slackSend channel:"#${slackChannelName}",
                   color:'danger',
-                  message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName},  dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
+                  message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName},  dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
       }
       throw err
     }

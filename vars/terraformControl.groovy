@@ -1,5 +1,6 @@
 //#!Groovy
 import org.wizeline.SlackI
+import org.wizeline.DevaultValues
 
 def callTerraform(_cmd, tf_configs) {
 
@@ -11,15 +12,15 @@ def callTerraform(_cmd, tf_configs) {
       gitCredentialsId = tf_configs.gitCredentialsId
       gitSha           = tf_configs.gitSha
 
-      dockerRegistry              = "devops.wize.mx:5000"
-      dockerImageName             = "wize-terraform"
-      dockerImageTag              = "0.1.0"
-      dockerRegistryCredentialsId = "d656f8b1-dcf6-4737-83c1-c9199fb02463"
+      dockerRegistry              = DevaultValues.defaultTerraformDockerRegistry
+      dockerImageName             = DevaultValues.defaultTerraformDockerImageName
+      dockerImageTag              = DevaultValues.defaultTerraformDockerImageTag
+      dockerRegistryCredentialsId = DevaultValues.defaultTerraformDockerRegistryCredentialsId
 
       tfSourceRelativePath = tf_configs.tfSourceRelativePath
 
       tfAwsAccessCredentialsId = tf_configs.tfAwsAccessCredentialsId
-      tfAwsRegion          = tf_configs.tfAwsRegion
+      tfAwsRegion              = tf_configs.tfAwsRegion
 
       tfAwsBackendBucketName    = tf_configs.tfAwsBackendBucketName
       tfAwsBackendBucketRegion  = tf_configs.tfAwsBackendBucketRegion
@@ -155,26 +156,27 @@ def call(body) {
     params,
     env,
     config,
-    getuser()
+    getUser()
   )
 
-  tf_configs.gitRepoUrl = params.GIT_REPO_URL
+  tf_configs.gitRepoUrl       = params.GIT_REPO_URL
   tf_configs.gitCredentialsId = params.GIT_CREDENTIALS_ID
-  tf_configs.gitSha = params.GIT_SHA
+  tf_configs.gitSha           = params.GIT_SHA
 
   tf_configs.dockerDaemonUrl = config.jobDockerDaemonHost
-  tf_configs.jenkinsNode = config.jobJenkinsNode
+  tf_configs.jenkinsNode     = config.jobJenkinsNode
 
-  tf_configs.tfSourceRelativePath = config.jobTfSourceRelativePath ?: '.'
+  def jobTfSourceRelativePath     = params.TF_SOURCE_RELATIVE_PATH ?: '.'
+  tf_configs.tfSourceRelativePath = config.jobTfSourceRelativePath ?: jobTfSourceRelativePath
 
-  tf_configs.tfAwsAccessCredentialsId = config.jobTfAwsAccessCredentialsId
-  tf_configs.tfAwsRegion = config.jobTfAwsRegion
+  tf_configs.tfAwsAccessCredentialsId = config.jobTfAwsAccessCredentialsId ?: params.TF_AWS_ACCESS_CREDENTIALS_ID
+  tf_configs.tfAwsRegion              = config.jobTfAwsRegion ?: params.TF_AWS_REGION
 
-  tf_configs.tfAwsBackendBucketName = config.jobTfAwsBackendBucketName
-  tf_configs.tfAwsBackendBucketRegion = config.jobTfAwsBackendBucketRegion
-  tf_configs.tfAwsBackendBucketKeyPath = config.jobTfAwsBackendBucketKeyPath
+  tf_configs.tfAwsBackendBucketName    = config.jobTfAwsBackendBucketName ?: params.TF_AWS_BACKEND_BUCKET_NAME
+  tf_configs.tfAwsBackendBucketRegion  = config.jobTfAwsBackendBucketRegion ?: params.TF_AWS_BACKEND_BUCKET_REGION
+  tf_configs.tfAwsBackendBucketKeyPath = config.jobTfAwsBackendBucketKeyPath ?: params.TF_AWS_BACKEND_BUCKET_KEY_PATH
 
-  tf_configs.tfVars = config.jobTfVars
+  tf_configs.tfVars = config.jobTfVars ?: params.TF_VARS
 
   slack_i.send('good', "*START* ${params.TERRAFORM_COMMAND} (terraformControl)")
 

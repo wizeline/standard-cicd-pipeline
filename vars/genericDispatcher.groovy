@@ -1,4 +1,6 @@
 //#!Groovy
+import org.wizeline.SlackI
+import org.wizeline.DevaultValues
 
 def is_main_branch(){
   return params.BRANCH == "origin/develop" ||
@@ -23,24 +25,31 @@ def call(body) {
 
   print config
 
-  def jobGitRepoUrl = params.GIT_REPO_URL
-  def jobGitCredentialsId = params.GIT_CREDENTIALS_ID
-  def jobGitSha = params.BRANCH
+  // Git
+  def jobGitRepoUrl        = params.GIT_REPO_URL
+  def jobGitCredentialsId  = params.GIT_CREDENTIALS_ID
+  def jobGitSha            = params.BRANCH
+  def jobGitShaNoOrigin    = jobGitSha
   def jobDisableSubmodules = config.disableSubmodules
-  def jobDockerImageName = params.DOCKER_IMAGE_NAME
-  def jobSlackChannelName = params.SLACK_CHANNEL_NAME
-  def jobDockerSourceRelativePath = params.DOCKER_SOURCE_REL_PATH
-  def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
-  def jobGitShaNoOrigin = jobGitSha//.replace("origin/", "")
-  def jobDockerDaemonHost = config.jobDockerDaemonHost
-  def jobDockerDaemonPort = config.dockerDaemonPort ?: '4243'
-  def jobJenkinsNode = config.jobJenkinsNode
+  def jobGitBranch
+  def jobGitShaCommit
+
+  // Docker
+  def jobDockerImageName             = params.DOCKER_IMAGE_NAME
+  def jobDockerSourceRelativePath    = params.DOCKER_SOURCE_REL_PATH
+  def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: DevaultValues.defaultDockerRegistryCredentialsId
+
+  // Docker Daemon
+  def jobDockerDaemonHost  = config.jobDockerDaemonHost
+  def jobDockerDaemonPort  = config.dockerDaemonPort ?: DevaultValues.defaultDockerDaemonPort
+
+  // Slack
+  def jobSlackChannelName  = params.SLACK_CHANNEL_NAME
+
+  def jobJenkinsNode       = config.jobJenkinsNode
 
   def disableLint = config.disableLint ?: 'false'
   def disableUnitTests = config.disableUnitTests ?: 'false'
-
-  def jobGitBranch
-  def jobGitShaCommit
 
   node {
     stage ('Checkout') {
