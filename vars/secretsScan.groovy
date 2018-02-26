@@ -1,4 +1,5 @@
 import org.wizeline.SlackI
+import org.wizeline.DefaultValues
 
 def call(body) {
 
@@ -17,15 +18,16 @@ def call(body) {
   def jobDockerDaemonHost = config.dockerDaemonHost
   def jobJenkinsNode = config.jenkinsNode
 
-  def jobGitRepoUrl = params.GIT_REPO_URL
+  def jobGitRepoUrl       = params.GIT_REPO_URL
   def jobGitCredentialsId = params.GIT_CREDENTIALS_ID
-  def jobGitSha = params.GIT_SHA
+  def jobGitSha           = params.GIT_SHA
 
+  config.disableSubmodules = config.disableSubmodules ?: DefaultValues.defaultDisableSubmodules
   def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
   println "disableSubmodules: ${jobDisableSubmodules}"
 
   def jobDockerImageName = params.DOCKER_IMAGE_NAME
-  def jobDockerImageTag = params.DOCKER_IMAGE_TAG
+  def jobDockerImageTag  = params.DOCKER_IMAGE_TAG
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID
 
   def commits_MaxDepth = params.COMMITS_MAX_DEPTH ?: '5'
@@ -35,7 +37,7 @@ def call(body) {
     params,
     env,
     config,
-    getuser()
+    getUser()
   )
 
   slack_i.send('good', "*START* secret-scan (secretsScan)")

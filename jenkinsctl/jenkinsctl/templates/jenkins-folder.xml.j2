@@ -13,12 +13,12 @@
               <userRemoteConfigs>
                 <hudson.plugins.git.UserRemoteConfig>
                   <url>git@github.com:wizeline/standard-cicd-pipeline.git</url>
-                  <credentialsId>b9abf261-0552-45f2-972d-08f3800d3d4f</credentialsId>
+                  <credentialsId>{{ git_standard_cicd_credentials_id }}</credentialsId>
                 </hudson.plugins.git.UserRemoteConfig>
               </userRemoteConfigs>
               <branches>
                 <hudson.plugins.git.BranchSpec>
-                  <name>*/develop</name>
+                  <name>*/{{ git_standard_cicd_version }}</name>
                 </hudson.plugins.git.BranchSpec>
               </branches>
               <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
@@ -26,7 +26,7 @@
               <extensions/>
             </scm>
           </retriever>
-          <defaultVersion>develop</defaultVersion>
+          <defaultVersion>{{ git_standard_cicd_version }}</defaultVersion>
           <implicit>true</implicit>
           <allowVersionOverride>true</allowVersionOverride>
         </org.jenkinsci.plugins.workflow.libs.LibraryConfiguration>

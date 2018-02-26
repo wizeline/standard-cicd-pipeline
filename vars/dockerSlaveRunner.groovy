@@ -1,4 +1,6 @@
 //#!Groovy
+import org.wizeline.DefaultValues
+
 def call(body) {
 
   def config = [:]
@@ -12,6 +14,7 @@ def call(body) {
   echo "dockerRunner.groovy"
   print config
 
+  // Validations
   if (!config.gitRepoUrl) {
     error 'You must provide a gitRepoUrl'
   }
@@ -36,14 +39,16 @@ def call(body) {
     error 'You must provide a dockerRegistryCredentialsId'
   }
 
-  def slackChannelName = config.slackChannelName ?: 'jenkins'
-  def slackToken = config.slackToken
-  def muteSlack = config.muteSlack ?: 'false'
+  // Slack info
+  def slackChannelName = config.slackChannelName ?: DefaultValues.defaultSlackChannelName
+  def slackToken       = config.slackToken
+  def muteSlack        = config.muteSlack ?: DefaultValues.defaultMuteSlack
   muteSlack = (muteSlack == 'true')
 
-  def gitRepoUrl = config.gitRepoUrl
-  def gitCredentialsId = config.gitCredentialsId
-  def gitSha = config.gitSha
+  // Git Info
+  def gitRepoUrl       = config.gitRepoUrl
+  def gitCredentialsId = config.gitCredentialsId ?: DefaultValues.defaultGitCredentialsId
+  def gitSha           = config.gitSha           ?: DefaultValues.defaultGitSha
   def gitBranch
 
   def envsRegExp = config.envsRegExp ?: ""
@@ -51,14 +56,15 @@ def call(body) {
   def dockerCommand = config.dockerCommand ?: ""
   // dockerInit
 
-  def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: ''
-  // For service discovery only
-  def dockerDaemonUrl = config.dockerDaemonUrl ?: 'internal-docker-daemon-elb.wize.mx'
-  def dockerRegistry = config.dockerRegistry ?: 'devops.wize.mx:5000'
+  def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: DefaultValues.defaultDockerRegistryCredentialsId
+  def dockerRegistry  = config.dockerRegistry ?: DefaultValues.defaultDockerRegistry
   def dockerImageName = config.dockerImageName
-  def dockerImageTag = config.dockerImageTag
+  def dockerImageTag  = config.dockerImageTag
+
+  // For service discovery only
   def dockerDaemonHost = config.dockerDaemonHost
-  def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
+  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DefaultValues.defaultDockerDaemonUrl
+  def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
 
   def jenkinsNode = config.jenkinsNode
@@ -136,7 +142,7 @@ chmod +x init.sh
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
           rm .env
 
-          [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE;
+          [ -n "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           exit 0
           """, returnStatus: true
 
@@ -155,7 +161,7 @@ chmod +x init.sh
       if (config.slackChannelName && !muteSlack){
         slackSend channel:"#${slackChannelName}",
                   color:'danger',
-                  message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName},  dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
+                  message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName},  dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
       }
       throw err
     }

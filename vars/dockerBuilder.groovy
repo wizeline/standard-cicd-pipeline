@@ -1,4 +1,6 @@
 //#!Groovy
+import org.wizeline.DefaultValues
+
 def call(body) {
 
   def config = [:]
@@ -12,6 +14,7 @@ def call(body) {
   echo "dockerBuilder.groovy"
   print config
 
+  // Validations
   if (!config.gitRepoUrl) {
     error 'You must provide a gitRepoUrl'
   }
@@ -32,30 +35,32 @@ def call(body) {
     error 'You must provide a dockerRegistryCredentialsId'
   }
 
-  def slackChannelName = config.slackChannelName ?: 'jenkins'
-  def slackToken = config.slackToken
-  def muteSlack = config.muteSlack ?: 'false'
+  // Slack Info
+  def slackChannelName = config.slackChannelName ?: DefaultValues.defaultSlackChannelName
+  def slackToken       = config.slackToken
+  def muteSlack        = config.muteSlack ?: DefaultValues.defaultMuteSlack
   muteSlack = (muteSlack == 'true')
 
-  def gitRepoUrl = config.gitRepoUrl
-  def gitCredentialsId = config.gitCredentialsId
-  def gitSha = config.gitSha
-
-  def dockerImageName = config.dockerImageName
-  def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId
-
+  // Git Info
+  def gitRepoUrl       = config.gitRepoUrl
+  def gitCredentialsId = config.gitCredentialsId ?: DefaultValues.defaultGitCredentialsId
+  def gitSha           = config.gitSha           ?: DefaultValues.defaultGitSha
   def gitBranch
 
-  def dockerRegistry = config.dockerRegistry ?: 'devops.wize.mx:5000'
-  def dockerEnvTag = config.dockerEnvTag ?: 'latest'
-  def dockerSourceRelativePath = config.dockerSourceRelativePath ?: '.'
+  // Docker Image Info
+  def dockerImageName             = config.dockerImageName
+  def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId
+  def dockerRegistry              = config.dockerRegistry           ?: DefaultValues.defaultDockerRegistry
+  def dockerEnvTag                = config.dockerEnvTag             ?: DefaultValues.defaultDockerEnvTag
+  def dockerSourceRelativePath    = config.dockerSourceRelativePath ?: DefaultValues.defaultDockerSourceRelativePath
+  def dockerDockerfileAbsolutePath = config.dockerDockerfileAbsolutePath ?: DefaultValues.defaultDockerDockerfileAbsolutePath
+  def dockerDockerfile            = config.dockerDockerfile         ?: DefaultValues.defaultDockerDockerfile
+  def dockerNoTagCheck            = config.dockerNoTagCheck         ?: DefaultValues.defaultDockerNoTagCheck
+
   // For service discovery only
-  def dockerDaemonUrl = config.dockerDaemonUrl ?: 'internal-docker-daemon-elb.wize.mx'
-  def dockerDockerfileAbsolutePath = config.dockerDockerfileAbsolutePath ?: '/source'
-  def dockerDockerfile = config.dockerDockerfile ?: 'Dockerfile'
-  def dockerNoTagCheck = config.dockerNoTagCheck ?: 'false'
-  def dockerDaemonHost= config.dockerDaemonHost
-  def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
+  def dockerDaemonHost = config.dockerDaemonHost
+  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DefaultValues.defaultDockerDaemonUrl
+  def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
 
   def jenkinsNode = config.jenkinsNode
@@ -87,7 +92,7 @@ def call(body) {
         if (config.slackChannelName && !muteSlack){
           slackSend channel:"#${slackChannelName}",
                     color:'good',
-                    message:"*START* Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER}\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* :${getuser()}"
+                    message:"*START* Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER}\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* :${getUser()}"
         }
       }
 
@@ -143,7 +148,7 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
           rm .env
 
-          [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE;
+          [ -n "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           exit 0
           """, returnStatus: true
 
@@ -153,13 +158,14 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
           [ -n "\$containers" ] && $docker_bin rm \$containers || exit 0
           """, returnStatus: true
 
-          if (exit_code != 0 && exit_code != 3){
+          TAG_ALREADY_EXIST_CODE = 3
+          if (exit_code != 0 && exit_code != TAG_ALREADY_EXIST_CODE){
             echo "FAILURE"
             currentBuild.result = 'FAILURE'
             if (config.slackChannelName && !muteSlack){
               slackSend channel:"#${slackChannelName}",
                         color:'danger',
-                        message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getuser()}"
+                        message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
             }
             error("FAILURE - Build container returned non 0 exit code")
             return 1
@@ -170,7 +176,7 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
           if (config.slackChannelName && !muteSlack){
             slackSend channel:"#${slackChannelName}",
                       color:'good',
-                      message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getuser()}"
+                      message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
           }
          }
      }
@@ -179,7 +185,7 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
        if (config.slackChannelName && !muteSlack){
          slackSend channel:"#${slackChannelName}",
                    color:'danger',
-                   message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getuser()}"
+                   message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
        }
        throw err
      }

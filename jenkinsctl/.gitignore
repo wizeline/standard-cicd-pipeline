@@ -1,0 +1,19 @@
+.venv
+__pycache__
+*egg-info*
+confs/*
+!confs/*.sample
+arguments/*
+!arguments/*.sample
+/frame-docs
+/newskit-kwatee
+temp
+build/
+dist/
+.vscode
+
+# VIM files
+*.swp
+
+.env
+aws_credentials
