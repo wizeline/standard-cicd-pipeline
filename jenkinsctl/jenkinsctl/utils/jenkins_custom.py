@@ -1,12 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import os
 import re
 import requests
 
-from jenkinsctl.main import logger
+from jenkinsctl.logger import logger
 
 
-class JenkinsCustom:
+class JenkinsRoutes(object):
+    CRUMB = '/crumbIssuer/api/json'
+    CONFIGURE_SECURITY = '/configureSecurity/configure'
+    INSTALL_PLUGINS = '/pluginManager/installNecessaryPlugins'
+    PLUGINS_LIST = '/pluginManager/api/json'
+    JOB_PREFIX = 'job'
+    CHANGE_API_TOKEN = '/user/admin/descriptorByName/jenkins.security.ApiTokenProperty/changeToken'
+    CREATE_CREDENTIALS = '/credentials/store/system/domain/_/createCredentials'
+    GET_CREDENTIALS = '/credentials/store/system/domain/_/credential'
+
+
+class JenkinsCustom(object):
 
     def __init__(self, jenkins_url=None, username=None, password=None):
         self.jenkins_url = jenkins_url
@@ -34,6 +46,30 @@ class JenkinsCustom:
           data=str(data),
           auth=(self.username, self.password))
         return req.status_code == 200
+
+    def install_plugins(self, data):
+        headers = self._get_headers()
+        install_plugins_url = \
+            f"{self.jenkins_url}{JenkinsRoutes.INSTALL_PLUGINS}"
+
+        req = self.session.post(
+          install_plugins_url,
+          headers=headers,
+          data=str(data),
+          auth=(self.username, self.password))
+        return req.status_code == 200
+
+    def get_plugins_list(self):
+        list_plugins_url = \
+            f"{self.jenkins_url}{JenkinsRoutes.PLUGINS_LIST}"
+        headers = self._get_headers()
+
+        req = self.session.get(
+          list_plugins_url,
+          headers=headers,
+          auth=(self.username, self.password))
+
+        return req.json()
 
     def has_job(self, job_name, folder=None):
         if folder:
@@ -68,3 +104,13 @@ class JenkinsCustom:
 
     def _get_headers(self):
         return {"content-type": "text/xml", "Jenkins-Crumb": self.crumb}
+
+    @staticmethod
+    def create_j_server():
+        jenkins_url = os.environ['JENKINS_URL']
+
+        return JenkinsCustom(
+          jenkins_url=jenkins_url,
+          username=os.environ['JENKINS_USER'],
+          password=os.environ['JENKINS_TOKEN']
+        )

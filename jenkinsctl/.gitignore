@@ -16,4 +16,5 @@ dist/
 *.swp
 
 .env
+tests/.env*
 aws_credentials

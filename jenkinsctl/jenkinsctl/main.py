@@ -1,12 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import logging
-
-logging.basicConfig(
-  level=logging.INFO,
-  format='%(asctime)s - %(levelname)s: %(message)s')
-logger = logging.getLogger(__name__)
-
+from jenkinsctl.logger import logger
 from jenkinsctl.interfaces.jenkinscmd import cli
 
 
