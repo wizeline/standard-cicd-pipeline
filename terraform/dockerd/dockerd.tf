@@ -22,6 +22,12 @@ resource "aws_security_group" "dockerd" {
     to_port     = 22
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    protocol    = "tcp"
+    from_port   = 4567
+    to_port     = 4567
+    cird_blocks = ["0.0.0.0/0"]
+  }
 
   ingress {
     protocol    = "tcp"
