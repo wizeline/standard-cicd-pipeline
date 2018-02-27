@@ -16,7 +16,6 @@ class TerraformFlow(AbstractFlow):
     prefix = ""
     default_params = {
         "git_repo_url": "",
-        "git_credentials_id": "",
         "git_sha": "",
         "tf_source_relative_path": "",
         "tf_aws_access_credentials_id": "",

@@ -22,6 +22,7 @@ class GenericAppFlow(AbstractFlow):
         "docker_image_name": "",
         "docker_source_rel_path": ".",
         "slack_channel_name": "jenkins",
+        "docker_dockerfile": "Dockerfile",
         "git_standard_cicd_credentials_id":
             "b9abf261-0552-45f2-972d-08f3800d3d4f",
         "git_credentials_id": "b9abf261-0552-45f2-972d-08f3800d3d4f",

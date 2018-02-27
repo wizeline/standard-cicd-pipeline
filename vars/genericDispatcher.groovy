@@ -38,6 +38,7 @@ def call(body) {
   def jobDockerImageName             = params.DOCKER_IMAGE_NAME
   def jobDockerSourceRelativePath    = params.DOCKER_SOURCE_REL_PATH
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: DefaultValues.defaultDockerRegistryCredentialsId
+  def jobDockerDockerfile            = params.DOCKER_DOCKERFILE ?: DefaultValues.defaultDockerDockerfile
 
   // Docker Daemon
   def jobDockerDaemonHost  = config.jobDockerDaemonHost
@@ -175,20 +176,21 @@ def call(body) {
   if (is_main_branch()) {
     stage("build-image:") {
       dockerBuilder {
-          gitRepoUrl = jobGitRepoUrl
-          gitCredentialsId = jobGitCredentialsId
-          gitSha  = jobGitShaCommit
+          gitRepoUrl        = jobGitRepoUrl
+          gitCredentialsId  = jobGitCredentialsId
+          gitSha            = jobGitShaCommit
           disableSubmodules = jobDisableSubmodules
 
-          dockerImageName = jobDockerImageName
+          dockerImageName             = jobDockerImageName
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-          slackChannelName = jobSlackChannelName
+          slackChannelName            = jobSlackChannelName
 
           dockerSourceRelativePath = jobDockerSourceRelativePath
+          dockerDockerfile         = jobDockerDockerfile
 
           dockerDaemonHost = jobDockerDaemonHost
           dockerDaemonPort = jobDockerDaemonPort
-          jenkinsNode = jobJenkinsNode
+          jenkinsNode      = jobJenkinsNode
       }
       return_hash["build-image"] = "success"
     }

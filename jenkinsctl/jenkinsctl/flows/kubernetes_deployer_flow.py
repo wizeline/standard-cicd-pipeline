@@ -15,9 +15,10 @@ class KubernetesDeployerFlow(AbstractFlow):
         "k8s_context": "",
         "k8s_namespace": "",
         "k8s_deployment_name": "",
-        "k8s_env_tag": ".",
-        "slack_channel_name": "jenkins",
+        "k8s_env_tag": "",
         "docker_image_name": "",
+        "slack_channel_name": "jenkins",
+        "docker_registry": "devops.wize.mx:5000",
         "git_standard_cicd_credentials_id":
             "b9abf261-0552-45f2-972d-08f3800d3d4f",
         "git_credentials_id": "b9abf261-0552-45f2-972d-08f3800d3d4f",
