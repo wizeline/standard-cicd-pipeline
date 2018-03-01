@@ -29,6 +29,7 @@ def call(body) {
   def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
   println "disableSubmodules: ${jobDisableSubmodules}"
 
+  def jobDockerRegistry  = params.DOCKER_REGISTRY   ?: DefaultValues.defaultDockerRegistry
   def jobDockerImageName = params.DOCKER_IMAGE_NAME
   def jobDockerImageTag  = params.DOCKER_IMAGE_TAG
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID
@@ -57,6 +58,7 @@ def call(body) {
     gitCredentialsId = jobGitCredentialsId
     gitSha = jobGitSha
 
+    dockerRegistry = jobDockerRegistry
     dockerImageName = jobDockerImageName
     dockerImageTag = jobDockerImageTag
     dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
