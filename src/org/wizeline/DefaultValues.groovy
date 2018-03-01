@@ -29,4 +29,6 @@ public class DefaultValues implements Serializable {
 
   // We need to move these iamges to a wizeline docker account
   public static defaultJobsAsAServiceImage = "sortigoza/jobs-as-a-service"
+
+  public static defaultK8sNamespace = 'default'
 }

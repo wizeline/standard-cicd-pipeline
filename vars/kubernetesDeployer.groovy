@@ -54,46 +54,54 @@ def call(body) {
   )
   slack_i.useK8sSufix()
 
-  // Validations
-  if (!config.dockerRegistryCredentialsId) {
-    error 'You must provide a dockerRegistryCredentialsId'
-  }
+  def k8sNamespace      = params.K8S_NAMESPACE ?: DefaultValues.defaultK8sNamespace
+  def k8sContext        = params.K8S_CONTEXT
+  def k8sDeploymentName = params.K8S_DEPLOYMENT_NAME
+  def k8sEnvTag         = params.K8S_ENV_TAG
+  def k8sConfigCredentialsId = params.K8S_CONFIG_CREDENTIALS_ID
 
-  if (!config.k8sConfigCredentialsId) {
-    error 'You must provide a k8sConfigCredentialsId'
-  }
+  // Docker
+  def dockerImageName = params.DOCKER_IMAGE_NAME
+  def dockerImageTag  = params.DOCKER_IMAGE_TAG
+  def dockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: DefaultValues.defaultDockerRegistryCredentialsId
+  def dockerRegistry  = params.DOCKER_REGISTRY   ?: DefaultValues.defaultDockerRegistry
 
-  if (!config.dockerImageName) {
-    error 'You must provide a dockerImageName'
-  }
-
-  if (!config.dockerImageTag) {
-    error 'You must provide a dockerImageTag'
-  }
-
-  if (!config.k8sContext) {
-    error 'You must provide a k8sContext'
-  }
-
-  if (!config.k8sDeploymentName) {
-    error 'You must provide a k8sDeploymentName'
-  }
-
-  if (!config.k8sEnvTag) {
-    error 'You must provide a k8sEnvTag'
-  }
-
-  def k8sNamespace = config.k8sNamespace ?: 'default'
-
-  def dockerRegistry  = config.dockerRegistry ?: DefaultValues.defaultDockerRegistry
-
-  // For service discovery only
-  def dockerDaemonHost = config.dockerDaemonHost
-  def dockerDaemonDnsDiscovery  = config.dockerDaemonDnsDiscovery  ?: DefaultValues.defaultdockerDaemonDnsDiscovery
-  def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
+  // Docker Daemon
+  def dockerDaemonHost  = config.dockerDaemonHost ?: params.DOCKER_DAEMON_HOST
+  def dockerDaemonDnsDiscovery  = params.DOCKER_DAEMON_DNS_DISCOVERY
+  def dockerDaemonPort  = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
 
   def jenkinsNode   = config.jobJenkinsNode ?: params.JENKINS_NODE
+
+  // Validations
+  if (!dockerRegistryCredentialsId) {
+    error 'You must provide a dockerRegistryCredentialsId (DOCKER_REG_CREDENTIALS_ID)'
+  }
+
+  if (!k8sConfigCredentialsId) {
+    error 'You must provide a k8sConfigCredentialsId (K8S_CONFIG_CREDENTIALS_ID)'
+  }
+
+  if (!dockerImageName) {
+    error 'You must provide a dockerImageName (DOCKER_IMAGE_NAME)'
+  }
+
+  if (!dockerImageTag) {
+    error 'You must provide a dockerImageTag (DOCKER_IMAGE_TAG)'
+  }
+
+  if (!k8sContext) {
+    error 'You must provide a k8sContext (K8S_CONTEXT)'
+  }
+
+  if (!k8sDeploymentName) {
+    error 'You must provide a k8sDeploymentName (K8S_DEPLOYMENT_NAME)'
+  }
+
+  if (!k8sEnvTag) {
+    error 'You must provide a k8sEnvTag (K8S_ENV_TAG)'
+  }
 
   slack_i.send("good", "kubernetesDeployer *START*")
   node (jenkinsNode){
@@ -105,9 +113,9 @@ def call(body) {
 
         withCredentials([
           [$class: 'FileBinding',
-            credentialsId: config.k8sConfigCredentialsId, variable: 'K8S_CONFIG'],
+            credentialsId: k8sConfigCredentialsId, variable: 'K8S_CONFIG'],
           [$class: 'UsernamePasswordMultiBinding',
-            credentialsId: config.dockerRegistryCredentialsId,
+            credentialsId: dockerRegistryCredentialsId,
             passwordVariable: 'DOCKER_REGISTRY_PASSWORD',
             usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
 
@@ -123,13 +131,13 @@ def call(body) {
 
         env_vars = """
 K8S_CONFIG=/root/.K8S_CONFIG.yaml
-K8S_CONTEXT=$config.k8sContext
+K8S_CONTEXT=$k8sContext
 K8S_NAMESPACE=$k8sNamespace
-K8S_DEPLOYMENT=$config.k8sDeploymentName
-K8S_ENV=$config.k8sEnvTag
+K8S_DEPLOYMENT=$k8sDeploymentName
+K8S_ENV=$k8sEnvTag
 DOCKER_REGISTRY=$dockerRegistry
-DOCKER_IMAGE_NAME=$config.dockerImageName
-DOCKER_COMMIT_TAG=$config.dockerImageTag
+DOCKER_IMAGE_NAME=$dockerImageName
+DOCKER_COMMIT_TAG=$dockerImageTag
 DOCKER_DAEMON_URL=$dockerDaemon
 DOCKER_REGISTRY_PASSWORD=$DOCKER_REGISTRY_PASSWORD
 DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
