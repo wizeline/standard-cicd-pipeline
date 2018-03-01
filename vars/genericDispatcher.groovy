@@ -1,6 +1,7 @@
 //#!Groovy
 import org.wizeline.SlackI
 import org.wizeline.DefaultValues
+import org.wizeline.DockerdDiscovery
 
 def is_main_branch(){
   return params.BRANCH == "origin/develop" ||
