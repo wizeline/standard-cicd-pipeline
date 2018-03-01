@@ -15,8 +15,11 @@ def call(body) {
 
   print config
 
-  def jobDockerDaemonHost = config.dockerDaemonHost
-  def jobJenkinsNode = config.jenkinsNode
+  // Docker Daemon
+  def jobDockerDaemonHost  = config.jobDockerDaemonHost ?: params.DOCKER_DAEMON_HOST
+  def jobDockerDaemonDnsDiscovery  = params.DOCKER_DAEMON_DNS_DISCOVERY
+  def jobDockerDaemonPort  = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
+  def jobJenkinsNode       = config.jenkinsNode ?: params.JENKINS_NODE
 
   def jobGitRepoUrl       = params.GIT_REPO_URL
   def jobGitCredentialsId = params.GIT_CREDENTIALS_ID
@@ -43,8 +46,11 @@ def call(body) {
   slack_i.send('good', "*START* secret-scan (secretsScan)")
 
   exit_code = dockerSlaveRunner {
-    dockerDaemonHost = jobDockerDaemonHost // "internal-docker.wize.mx"
-    jenkinsNode = jobJenkinsNode // "devops1"
+    dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
+    dockerDaemonHost = jobDockerDaemonHost
+    dockerDaemonPort = jobDockerDaemonPort
+    jenkinsNode = jobJenkinsNode
+
     disableSubmodules = jobDisableSubmodules // "true"
 
     gitRepoUrl = jobGitRepoUrl
