@@ -8,7 +8,7 @@
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
-          <name>K8S_CREDENTIALS_ID</name>
+          <name>K8S_CONFIG_CREDENTIALS_ID</name>
           <description></description>
           <defaultValue>{{ k8s_credentials_id }}</defaultValue>
         </hudson.model.StringParameterDefinition>
@@ -23,12 +23,12 @@
           <defaultValue>{{ k8s_namespace }}</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>K8S_DEPLOYMENT</name>
+          <name>K8S_DEPLOYMENT_NAME</name>
           <description></description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>K8S_ENV</name>
+          <name>K8S_ENV_TAG</name>
           <description></description>
           <defaultValue>{{ k8s_env_tag }}</defaultValue>
         </hudson.model.StringParameterDefinition>
@@ -43,10 +43,33 @@
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>DOCKER_COMMIT_TAG</name>
+          <name>DOCKER_IMAGE_TAG</name>
           <description></description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
+
+        {% if docker_daemon_host %}
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_DAEMON_HOST</name>
+          <description></description>
+          <defaultValue>{{ docker_daemon_host }}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        {% endif %}
+        {% if docker_daemon_dns_discovery %}
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_DAEMON_DNS_DISCOVERY</name>
+          <description></description>
+          <defaultValue>{{ docker_daemon_dns_discovery }}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        {% endif %}
+        {% if docker_registry_credentials_id %}
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_REG_CREDENTIALS_ID</name>
+          <description></description>
+          <defaultValue>{{ docker_registry_credentials_id }}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        {% endif %}
+
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@1.9.0">
@@ -63,31 +86,7 @@
     </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
   </properties>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.18">
-    <script>def jobK8sConfigCredentialsId = params.K8S_CREDENTIALS_ID
-def jobK8sContext = params.K8S_CONTEXT
-def jobK8sNamespace = params.K8S_NAMESPACE
-def jobK8sDeployment = params.K8S_DEPLOYMENT
-def jobK8sEnv = params.K8S_ENV
-def jobDockerRegistry = params.DOCKER_REGISTRY
-def jobDockerImageName = params.DOCKER_IMAGE_NAME
-def jobDockerImageTag = params.DOCKER_COMMIT_TAG
-def jobDockerDaemon = params.DOCKER_DAEMON_URL
-
-kubernetesDeployer {
-  k8sConfigCredentialsId = jobK8sConfigCredentialsId
-  k8sContext = jobK8sContext
-  k8sNamespace = jobK8sNamespace
-  k8sDeploymentName = jobK8sDeployment
-  k8sEnvTag = jobK8sEnv
-
-  dockerRegistry = jobDockerRegistry
-  dockerImageName = jobDockerImageName
-  dockerImageTag = jobDockerImageTag
-
-  dockerDaemonHost = &quot;internal-docker.wize.mx&quot;
-  dockerRegistryCredentialsId = &quot;d656f8b1-dcf6-4737-83c1-c9199fb02463&quot;
-  jenkinsNode = &quot;devops1&quot;
-}</script>
+    <script>kubernetesDeployer {}</script>
     <sandbox>true</sandbox>
   </definition>
   <triggers/>

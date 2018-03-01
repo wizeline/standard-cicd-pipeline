@@ -29,6 +29,7 @@ class GenericAppFlow(AbstractFlow):
         "git_standard_cicd_version": "develop",
         "docker_registry_credentials_id":
             "d656f8b1-dcf6-4737-83c1-c9199fb02463",
+        # "docker_registry": "",
     }
 
     def __init__(self, prefix=""):
