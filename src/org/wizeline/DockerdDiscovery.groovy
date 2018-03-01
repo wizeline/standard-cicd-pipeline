@@ -6,7 +6,7 @@ public class DockerdDiscovery implements Serializable {
       if (!dockerDaemonHost){
         dockerDaemonHost = steps.sh(script: "dig +short ${dockerDaemonDnsDiscovery} | head -n 1", returnStdout: true).trim()
       }
-      dockerDaemon = "tcp://${dockerDaemonHost}:${dockerDaemonPort}"
+      def dockerDaemon = "tcp://${dockerDaemonHost}:${dockerDaemonPort}"
       return dockerDaemon
    }
 }
