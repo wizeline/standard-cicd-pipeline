@@ -119,7 +119,7 @@ chmod +x init.sh
 
           // Using a load balancer get the ip of a dockerdaemon and keep it for
           // future use.
-          dockerDaemon = DockerdDiscovery.getDockerDaemon(dockerDaemonHost, dockerDaemonPort, dockerDaemonDnsDiscovery)
+          dockerDaemon = DockerdDiscovery.getDockerDaemon(this, dockerDaemonHost, dockerDaemonPort, dockerDaemonDnsDiscovery)
 
           env.DOCKER_TLS_VERIFY = ""
 
