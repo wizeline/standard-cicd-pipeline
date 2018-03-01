@@ -38,16 +38,18 @@ def call(body) {
   def jobDockerImageName             = params.DOCKER_IMAGE_NAME
   def jobDockerSourceRelativePath    = params.DOCKER_SOURCE_REL_PATH
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: DefaultValues.defaultDockerRegistryCredentialsId
+  def jobDockerRegistry              = params.DOCKER_REGISTRY   ?: DefaultValues.defaultDockerRegistry
   def jobDockerDockerfile            = params.DOCKER_DOCKERFILE ?: DefaultValues.defaultDockerDockerfile
 
   // Docker Daemon
-  def jobDockerDaemonHost  = config.jobDockerDaemonHost
+  def jobDockerDaemonHost  = config.jobDockerDaemonHost ?: params.DOCKER_DAEMON_HOST
+  def jobDockerDaemonDnsDiscovery  = params.DOCKER_DAEMON_DNS_DISCOVERY
   def jobDockerDaemonPort  = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
 
   // Slack
   def jobSlackChannelName  = params.SLACK_CHANNEL_NAME
 
-  def jobJenkinsNode       = config.jobJenkinsNode
+  def jobJenkinsNode       = config.jobJenkinsNode ?: params.JENKINS_NODE
 
   def disableLint = config.disableLint ?: 'false'
   def disableUnitTests = config.disableUnitTests ?: 'false'
@@ -84,6 +86,7 @@ def call(body) {
 
             dockerImageName = jobDockerImageName
             dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+            dockerRegistry = jobDockerRegistry
             slackChannelName = jobSlackChannelName
 
             dockerEnvTag = test_tag
@@ -91,9 +94,10 @@ def call(body) {
             dockerNoTagCheck = "true"
             dockerSourceRelativePath = jobDockerSourceRelativePath
 
-            // dockerDaemonUrl vs dockerDaemonHost
-            // dockerDaemonUrl: will select a dockerd from a elb
+            // dockerDaemonDnsDiscovery vs dockerDaemonHost
+            // dockerDaemonDnsDiscovery: will select a dockerd from a elb
             // dockerDaemonHost: uses specific dockerd
+            dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
             dockerDaemonHost = jobDockerDaemonHost
             dockerDaemonPort = jobDockerDaemonPort
             jenkinsNode = jobJenkinsNode
@@ -103,8 +107,10 @@ def call(body) {
           dockerImageName = jobDockerImageName
           dockerImageTag = test_tag
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          dockerRegistry = jobDockerRegistry
           slackChannelName = jobSlackChannelName
 
+          dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
           dockerDaemonHost = jobDockerDaemonHost
           dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
@@ -131,6 +137,7 @@ def call(body) {
 
             dockerImageName = jobDockerImageName
             dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+            dockerRegistry = jobDockerRegistry
             slackChannelName = jobSlackChannelName
 
             dockerEnvTag = lint_tag
@@ -138,6 +145,7 @@ def call(body) {
             dockerNoTagCheck = "true"
             dockerSourceRelativePath = jobDockerSourceRelativePath
 
+            dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
             dockerDaemonHost = jobDockerDaemonHost
             dockerDaemonPort = jobDockerDaemonPort
             jenkinsNode = jobJenkinsNode
@@ -147,8 +155,10 @@ def call(body) {
           dockerImageName = jobDockerImageName
           dockerImageTag = lint_tag
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          dockerRegistry = jobDockerRegistry
           slackChannelName = jobSlackChannelName
 
+          dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
           dockerDaemonHost = jobDockerDaemonHost
           dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
@@ -183,11 +193,13 @@ def call(body) {
 
           dockerImageName             = jobDockerImageName
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          dockerRegistry = jobDockerRegistry
           slackChannelName            = jobSlackChannelName
 
           dockerSourceRelativePath = jobDockerSourceRelativePath
           dockerDockerfile         = jobDockerDockerfile
 
+          dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
           dockerDaemonHost = jobDockerDaemonHost
           dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode      = jobJenkinsNode

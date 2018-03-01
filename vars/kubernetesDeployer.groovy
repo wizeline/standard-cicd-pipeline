@@ -29,6 +29,7 @@
 
 import org.wizeline.SlackI
 import org.wizeline.DefaultValues
+import org.wizeline.DockerdDiscovery
 
 def call(body) {
 
@@ -88,7 +89,7 @@ def call(body) {
 
   // For service discovery only
   def dockerDaemonHost = config.dockerDaemonHost
-  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DefaultValues.defaultDockerDaemonUrl
+  def dockerDaemonDnsDiscovery  = config.dockerDaemonDnsDiscovery  ?: DefaultValues.defaultdockerDaemonDnsDiscovery
   def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
 
@@ -115,10 +116,7 @@ def call(body) {
 
             // Using a load balancer get the ip of a dockerdaemon and keep it for
             // future use.
-            if (!dockerDaemonHost){
-              dockerDaemonHost = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
-            }
-            dockerDaemon = "tcp://${dockerDaemonHost}:${dockerDaemonPort}"
+            dockerDaemon = DockerdDiscovery.getDockerDaemon(dockerDaemonHost, dockerDaemonPort, dockerDaemonDnsDiscovery)
 
 
             sh "cp -f $K8S_CONFIG .K8S_CONFIG.yaml"

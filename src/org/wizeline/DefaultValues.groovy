@@ -9,7 +9,7 @@ public class DefaultValues implements Serializable {
 
   public static defaultDockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
   public static defaultDockerDaemonPort = '4243'
-  public static defaultDockerDaemonUrl  = 'internal-docker-daemon-elb.wize.mx'
+  public static defaultdockerDaemonDnsDiscovery  = 'internal-docker-daemon-elb.wize.mx'
   public static defaultDockerRegistry = "devops.wize.mx:5000"
 
   public static defaultSlackChannelName = 'jenkins'
