@@ -6,6 +6,9 @@ def callTerraform(_cmd, tf_configs) {
 
   return dockerTerraformRunner {
       dockerDaemonHost = tf_configs.dockerDaemonHost
+      dockerDaemonDnsDiscovery = tf_configs.dockerDaemonDnsDiscovery
+      dockerDaemonPort = tf_configs.dockerDaemonPort
+
       jenkinsNode = tf_configs.jenkinsNode
 
       gitRepoUrl       = tf_configs.gitRepoUrl
@@ -163,8 +166,18 @@ def call(body) {
   tf_configs.gitCredentialsId = params.GIT_CREDENTIALS_ID
   tf_configs.gitSha           = params.GIT_SHA
 
-  tf_configs.dockerDaemonHost = config.jobDockerDaemonHost
-  tf_configs.jenkinsNode     = config.jobJenkinsNode
+  // Docker Daemon
+  def dockerDaemonHost  = config.dockerDaemonHost ?: params.DOCKER_DAEMON_HOST
+  def dockerDaemonDnsDiscovery  = params.DOCKER_DAEMON_DNS_DISCOVERY
+  def dockerDaemonPort  = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
+  def dockerDaemon
+
+  def jenkinsNode   = config.jobJenkinsNode ?: params.JENKINS_NODE
+
+  tf_configs.dockerDaemonHost = dockerDaemonHost
+  tf_configs.dockerDaemonDnsDiscovery = dockerDaemonDnsDiscovery
+  tf_configs.dockerDaemonPort = dockerDaemonPort
+  tf_configs.jenkinsNode     = jenkinsNode
 
   def jobTfSourceRelativePath     = params.TF_SOURCE_RELATIVE_PATH ?: '.'
   tf_configs.tfSourceRelativePath = config.jobTfSourceRelativePath ?: jobTfSourceRelativePath
