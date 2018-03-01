@@ -15,10 +15,10 @@ def callTerraform(_cmd, tf_configs) {
       gitCredentialsId = tf_configs.gitCredentialsId
       gitSha           = tf_configs.gitSha
 
-      dockerRegistry              = DefaultValues.defaultTerraformDockerRegistry
-      dockerImageName             = DefaultValues.defaultTerraformDockerImageName
-      dockerImageTag              = DefaultValues.defaultTerraformDockerImageTag
-      dockerRegistryCredentialsId = DefaultValues.defaultTerraformDockerRegistryCredentialsId
+      dockerRegistry              = tf_configs.dockerRegistry
+      dockerImageName             = tf_configs.dockerImageName
+      dockerImageTag              = tf_configs.dockerImageTag
+      dockerRegistryCredentialsId = tf_configs.dockerRegistryCredentialsId
 
       tfSourceRelativePath = tf_configs.tfSourceRelativePath
 
@@ -177,7 +177,13 @@ def call(body) {
   tf_configs.dockerDaemonHost = dockerDaemonHost
   tf_configs.dockerDaemonDnsDiscovery = dockerDaemonDnsDiscovery
   tf_configs.dockerDaemonPort = dockerDaemonPort
+
   tf_configs.jenkinsNode     = jenkinsNode
+
+  tf_configs.dockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: DefaultValues.defaultTerraformDockerRegistryCredentialsId
+  tf_configs.dockerRegistry  = params.DOCKER_REGISTRY ?: DefaultValues.defaultTerraformDockerRegistry
+  tf_configs.dockerImageName = params.DOCKER_IMAGE_NAME ?: DefaultValues.defaultTerraformDockerImageName
+  tf_configs.dockerImageTag  = params.DOCKER_IMAGE_TAG ?: DefaultValues.defaultTerraformDockerImageTag
 
   def jobTfSourceRelativePath     = params.TF_SOURCE_RELATIVE_PATH ?: '.'
   tf_configs.tfSourceRelativePath = config.jobTfSourceRelativePath ?: jobTfSourceRelativePath
