@@ -105,7 +105,7 @@ def call(body) {
                          usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
 
           def workspace = pwd()
-          def job_as_service_image = "devops.wize.mx:5000/jobs-as-a-service"
+          def job_as_service_image = DefaultValues.defaultJobsAsAServiceImage
 
           // Using a load balancer get the ip of a dockerdaemon and keep it for
           // future use.

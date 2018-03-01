@@ -26,4 +26,7 @@ public class DefaultValues implements Serializable {
   public static defaultMuteSlack = 'false'
 
   public static defaultDisableSubmodules = "true"
+
+  // We need to move these iamges to a wizeline docker account
+  public static defaultJobsAsAServiceImage = "sortigoza/jobs-as-a-service"
 }
