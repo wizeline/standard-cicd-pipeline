@@ -93,7 +93,7 @@ def call(body) {
   def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
 
-  def jobJenkinsNode   = config.jobJenkinsNode ?: params.JENKINS_NODE
+  def jenkinsNode   = config.jobJenkinsNode ?: params.JENKINS_NODE
 
   slack_i.send("good", "kubernetesDeployer *START*")
   node (jenkinsNode){
