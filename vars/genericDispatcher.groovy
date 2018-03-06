@@ -9,7 +9,11 @@ def is_main_branch(){
   params.BRANCH == "origin/master" ||
   params.BRANCH == "develop" ||
   params.BRANCH == "stage" ||
-  params.BRANCH == "master"
+  params.BRANCH == "master" ||
+  params.BRANCH == "origin/development" ||
+  params.BRANCH == "origin/staging" ||
+  params.BRANCH == "development" ||
+  params.BRANCH == "staging"
 }
 
 def call(body) {
