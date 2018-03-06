@@ -152,12 +152,17 @@ EOF"""
 
           env.DOCKER_TLS_VERIFY = ""
 
-          env.AWS_ACCESS_KEY_ID = AWS_TF_USERNAME
-          env.AWS_SECRET_ACCESS_KEY = AWS_TF_PASSWORD
-          env.AWS_DEFAULT_REGION = tfAwsRegion
-          env.AWS_TF_BACKEND_BUCKET = tfAwsBackendBucketName
-          env.AWS_TF_BACKEND_REGION = tfAwsBackendBucketRegion
-          env.AWS_TF_BACKEND_KEY_PATH = tfAwsBackendBucketKeyPath
+          env_vars = """DOCKER_TLS_VERIFY=""
+AWS_ACCESS_KEY_ID=$AWS_TF_USERNAME
+AWS_SECRET_ACCESS_KEY=$AWS_TF_PASSWORD
+AWS_DEFAULT_REGION=$tfAwsRegion
+AWS_TF_BACKEND_BUCKET=$tfAwsBackendBucketName
+AWS_TF_BACKEND_REGION=$tfAwsBackendBucketRegion
+AWS_TF_BACKEND_KEY_PATH=$tfAwsBackendBucketKeyPath
+TF_SOURCE_RELATIVE_PATH=$tfSourceRelativePath
+"""
+
+          writeFile file: ".env", text: env_vars
 
           echo "Using remote docker daemon: ${dockerDaemon}"
           docker_bin="docker -H $dockerDaemon"
@@ -168,10 +173,10 @@ EOF"""
 
           // Call the buidler container
           exit_code = sh script: """
-          env | sort | grep -E \"AWS_\" > .env
+          env | sort | grep -E \"AWS_|TF_\" > .env
           $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || true
           docker_id=\$($docker_bin create --env-file .env $dockerRegistry/$dockerImageName:$dockerImageTag $tfCommand)
-          $docker_bin cp $workspace/$tfSourceRelativePath/. \$docker_id:/project
+          $docker_bin cp $workspace/. \$docker_id:/project
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
           rm .env
 

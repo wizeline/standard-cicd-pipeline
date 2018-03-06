@@ -4,7 +4,7 @@ public class DefaultValues implements Serializable {
   // Terraform
   public static defaultTerraformDockerRegistry              = "devops.wize.mx:5000"
   public static defaultTerraformDockerImageName             = "wize-terraform"
-  public static defaultTerraformDockerImageTag              = "0.1.0"
+  public static defaultTerraformDockerImageTag              = "0.1.2"
   public static defaultTerraformDockerRegistryCredentialsId = "d656f8b1-dcf6-4737-83c1-c9199fb02463"
 
   public static defaultDockerRegistryCredentialsId = 'd656f8b1-dcf6-4737-83c1-c9199fb02463'
