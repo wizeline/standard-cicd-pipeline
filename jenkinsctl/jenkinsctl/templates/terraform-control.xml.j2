@@ -124,7 +124,7 @@
     </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
   </properties>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.18">
-    <script>terraformControl() {}</script>
+    <script>ansiColor('xterm') { terraformControl() {} }</script>
     <sandbox>true</sandbox>
   </definition>
   <triggers/>
