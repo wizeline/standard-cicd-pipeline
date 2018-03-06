@@ -173,7 +173,6 @@ TF_SOURCE_RELATIVE_PATH=$tfSourceRelativePath
 
           // Call the buidler container
           exit_code = sh script: """
-          env | sort | grep -E \"AWS_|TF_\" > .env
           $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || true
           docker_id=\$($docker_bin create --env-file .env $dockerRegistry/$dockerImageName:$dockerImageTag $tfCommand)
           $docker_bin cp $workspace/. \$docker_id:/project
