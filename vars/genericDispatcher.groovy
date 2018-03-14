@@ -195,6 +195,7 @@ def call(body) {
 
   if (is_main_branch() || is_force_build()) {
     stage("build-image:") {
+      def branchTag = jobGitShaNoOrigin.replace("/", "_").replace("origin", "")
       dockerBuilder {
           gitRepoUrl        = jobGitRepoUrl
           gitCredentialsId  = jobGitCredentialsId
@@ -202,7 +203,7 @@ def call(body) {
           disableSubmodules = jobDisableSubmodules
 
           dockerImageName             = jobDockerImageName
-          dockerEnvTags               = "$jobGitShaNoOrigin"
+          dockerEnvTags               = "$branchTag"
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
           dockerRegistry = jobDockerRegistry
           slackChannelName            = jobSlackChannelName
