@@ -197,6 +197,7 @@ def call(body) {
           disableSubmodules = jobDisableSubmodules
 
           dockerImageName             = jobDockerImageName
+          dockerEnvTags               = "$jobGitBranch"
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
           dockerRegistry = jobDockerRegistry
           slackChannelName            = jobSlackChannelName

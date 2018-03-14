@@ -19,6 +19,7 @@ public class DefaultValues implements Serializable {
   public static defaultDockerDockerfileAbsolutePath = '/source'
   public static defaultDockerSourceRelativePath = '.'
   public static defaultDockerEnvTag = 'latest'
+  public static defaultDockerEnvTags = ''
 
   public static defaultGitCredentialsId = ""
   public static defaultGitSha = "development"
@@ -29,6 +30,7 @@ public class DefaultValues implements Serializable {
 
   // We need to move these iamges to a wizeline docker account
   public static defaultJobsAsAServiceImage = "sortigoza/jobs-as-a-service"
+  public static defaultJobsAsAServiceImageTag = "latest"
 
   public static defaultK8sNamespace = 'default'
 }

@@ -53,6 +53,7 @@ def call(body) {
   def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId
   def dockerRegistry              = config.dockerRegistry           ?: DefaultValues.defaultDockerRegistry
   def dockerEnvTag                = config.dockerEnvTag             ?: DefaultValues.defaultDockerEnvTag
+  def dockerEnvTags               = config.dockerEnvTags             ?: DefaultValues.defaultDockerEnvTag
   def dockerSourceRelativePath    = config.dockerSourceRelativePath ?: DefaultValues.defaultDockerSourceRelativePath
   def dockerDockerfileAbsolutePath = config.dockerDockerfileAbsolutePath ?: DefaultValues.defaultDockerDockerfileAbsolutePath
   def dockerDockerfile            = config.dockerDockerfile         ?: DefaultValues.defaultDockerDockerfile
@@ -118,6 +119,7 @@ DOCKER_IMAGE_NAME=$dockerImageName
 DOCKER_DOCKERFILE_ABS_PATH=$dockerDockerfileAbsolutePath
 DOCKER_DOCKERFILE=$dockerDockerfile
 DOCKER_ENV_TAG=$dockerEnvTag
+DOCKER_ENV_TAGS=$dockerEnvTags
 NO_TAG_CHECK=$dockerNoTagCheck
 DOCKER_COMMIT_TAG=$dockerCommitTag
 DOCKER_TLS_VERIFY=""
