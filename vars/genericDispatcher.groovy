@@ -18,7 +18,7 @@ def is_main_branch(){
 
 def is_force_build(){
   print "FORCE_BUILD: ${params.FORCE_BUILD}"
-  return params.FORCE_BUILD == true
+  return params.FORCE_BUILD
 }
 
 def call(body) {
