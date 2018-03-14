@@ -16,6 +16,11 @@ def is_main_branch(){
   params.BRANCH == "staging"
 }
 
+def is_force_build(){
+  print "FORCE_BUILD: ${params.FORCE_BUILD}"
+  return params.FORCE_BUILD == "true"
+}
+
 def call(body) {
 
   def config = [:]
@@ -188,7 +193,7 @@ def call(body) {
     currentBuild.result = 'SUCCESS'
   }
 
-  if (is_main_branch()) {
+  if (is_main_branch() || is_force_build()) {
     stage("build-image:") {
       dockerBuilder {
           gitRepoUrl        = jobGitRepoUrl
