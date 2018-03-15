@@ -48,8 +48,9 @@ def call(body) {
   def jobDockerImageName             = params.DOCKER_IMAGE_NAME
   def jobDockerSourceRelativePath    = params.DOCKER_SOURCE_REL_PATH
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: DefaultValues.defaultDockerRegistryCredentialsId
-  def jobDockerRegistry              = params.DOCKER_REGISTRY   ?: DefaultValues.defaultDockerRegistry
-  def jobDockerDockerfile            = params.DOCKER_DOCKERFILE ?: DefaultValues.defaultDockerDockerfile
+  def jobDockerRegistry              = params.DOCKER_REGISTRY     ?: DefaultValues.defaultDockerRegistry
+  def jobDockerDockerfile            = params.DOCKER_DOCKERFILE   ?: DefaultValues.defaultDockerDockerfile
+  def jobDockerNoTagCheck            = config.DOCKER_NO_TAG_CHECK ?: DefaultValues.defaultDockerNoTagCheck
 
   // Docker Daemon
   def jobDockerDaemonHost  = config.jobDockerDaemonHost ?: params.DOCKER_DAEMON_HOST
@@ -205,7 +206,8 @@ def call(body) {
           dockerImageName             = jobDockerImageName
           dockerEnvTags               = "$branchTag"
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-          dockerRegistry = jobDockerRegistry
+          dockerRegistry              = jobDockerRegistry
+          dockerNoTagCheck            = jobDockerNoTagCheck
           slackChannelName            = jobSlackChannelName
 
           dockerSourceRelativePath = jobDockerSourceRelativePath

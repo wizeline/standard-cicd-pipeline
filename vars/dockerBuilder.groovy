@@ -53,7 +53,7 @@ def call(body) {
   def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId
   def dockerRegistry              = config.dockerRegistry           ?: DefaultValues.defaultDockerRegistry
   def dockerEnvTag                = config.dockerEnvTag             ?: DefaultValues.defaultDockerEnvTag
-  def dockerEnvTags               = config.dockerEnvTags             ?: DefaultValues.defaultDockerEnvTag
+  def dockerEnvTags               = config.dockerEnvTags             ?: DefaultValues.defaultDockerEnvTags
   def dockerSourceRelativePath    = config.dockerSourceRelativePath ?: DefaultValues.defaultDockerSourceRelativePath
   def dockerDockerfileAbsolutePath = config.dockerDockerfileAbsolutePath ?: DefaultValues.defaultDockerDockerfileAbsolutePath
   def dockerDockerfile            = config.dockerDockerfile         ?: DefaultValues.defaultDockerDockerfile
@@ -112,7 +112,7 @@ def call(body) {
           // future use.
           dockerDaemon = DockerdDiscovery.getDockerDaemon(this, dockerDaemonHost, dockerDaemonPort, dockerDaemonDnsDiscovery)
 
-          def dockerCommitTag = (dockerNoTagCheck == "true") ? dockerEnvTag : gitSha
+          def dockerCommitTag = gitSha
 
           env_vars = """DOCKER_REGISTRY=$dockerRegistry
 DOCKER_IMAGE_NAME=$dockerImageName
