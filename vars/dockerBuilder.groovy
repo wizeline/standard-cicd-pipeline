@@ -124,7 +124,7 @@ NO_TAG_CHECK=$dockerNoTagCheck
 DOCKER_COMMIT_TAG=$dockerCommitTag
 DOCKER_TLS_VERIFY=""
 DOCKER_DAEMON_URL=$dockerDaemon
-DOCKER_REGISTRY_PASSWORD="$DOCKER_REGISTRY_PASSWORD"
+DOCKER_REGISTRY_PASSWORD=$DOCKER_REGISTRY_PASSWORD
 DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
 """
 
@@ -154,10 +154,10 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
           """, returnStatus: true
 
           // Ensure every exited container has been removed
-          sh script: """
-          containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
-          [ -n "\$containers" ] && $docker_bin rm \$containers || exit 0
-          """, returnStatus: true
+          // sh script: """
+          // containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
+          // [ -n "\$containers" ] && $docker_bin rm \$containers || exit 0
+          // """, returnStatus: true
 
           TAG_ALREADY_EXIST_CODE = 3
           if (exit_code != 0 && exit_code != TAG_ALREADY_EXIST_CODE){
