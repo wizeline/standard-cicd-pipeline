@@ -147,7 +147,7 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
           docker_id=\$($docker_bin create --env-file .env $job_as_service_image /build)
           $docker_bin cp $workspace/$dockerSourceRelativePath/. \$docker_id:/source
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
-          rm .env
+          # rm .env
 
           [ -n "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           exit 0
