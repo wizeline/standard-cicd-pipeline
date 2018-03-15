@@ -125,6 +125,7 @@ chmod +x init.sh
 
           echo "Using remote docker daemon: ${dockerDaemon}"
           docker_bin="docker -H $dockerDaemon"
+          env.DOCKER_TLS_VERIFY = ""
 
           sh "$docker_bin version"
 
