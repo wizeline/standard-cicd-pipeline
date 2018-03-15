@@ -147,17 +147,17 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
           docker_id=\$($docker_bin create --env-file .env $job_as_service_image /build)
           $docker_bin cp $workspace/$dockerSourceRelativePath/. \$docker_id:/source
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
-          # rm .env
+          rm .env
 
           [ -n "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           exit 0
           """, returnStatus: true
 
           // Ensure every exited container has been removed
-          // sh script: """
-          // containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
-          // [ -n "\$containers" ] && $docker_bin rm \$containers || exit 0
-          // """, returnStatus: true
+          sh script: """
+          containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
+          [ -n "\$containers" ] && $docker_bin rm \$containers || exit 0
+          """, returnStatus: true
 
           TAG_ALREADY_EXIST_CODE = 3
           if (exit_code != 0 && exit_code != TAG_ALREADY_EXIST_CODE){
