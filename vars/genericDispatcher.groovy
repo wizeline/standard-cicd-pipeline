@@ -50,7 +50,7 @@ def call(body) {
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: DefaultValues.defaultDockerRegistryCredentialsId
   def jobDockerRegistry              = params.DOCKER_REGISTRY     ?: DefaultValues.defaultDockerRegistry
   def jobDockerDockerfile            = params.DOCKER_DOCKERFILE   ?: DefaultValues.defaultDockerDockerfile
-  def jobDockerNoTagCheck            = config.DOCKER_NO_TAG_CHECK ?: DefaultValues.defaultDockerNoTagCheck
+  def jobDockerNoTagCheck            = params.DOCKER_NO_TAG_CHECK ?: DefaultValues.defaultDockerNoTagCheck
 
   // Docker Daemon
   def jobDockerDaemonHost  = config.jobDockerDaemonHost ?: params.DOCKER_DAEMON_HOST
