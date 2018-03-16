@@ -36,7 +36,7 @@ class JobTemplate(object):
                 logger.info(f"Job {self.name} created!")
                 return True
             else:
-                raise "Unhandled error"
+                raise Exception("Unhandled error")
                 return False
         else:
             logger.warning(f"Job {self.name} alrady exist!")
