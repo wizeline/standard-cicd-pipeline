@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from jenkinsctl.main import logger
+from jenkinsctl.logger import logger
 from jinja2 import Template
 
 
-class JobTemplate:
+class JobTemplate(object):
     parameters = {}
     _jenkins_object = None
     _template_file = ""
@@ -36,7 +36,7 @@ class JobTemplate:
                 logger.info(f"Job {self.name} created!")
                 return True
             else:
-                raise "Unhandled error"
+                raise Exception("Unhandled error")
                 return False
         else:
             logger.warning(f"Job {self.name} alrady exist!")

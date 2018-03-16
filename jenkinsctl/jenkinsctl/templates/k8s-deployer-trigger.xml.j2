@@ -8,7 +8,7 @@
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
-          <name>DOCKER_COMMIT_TAG</name>
+          <name>DOCKER_IMAGE_TAG</name>
           <description></description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
@@ -44,10 +44,10 @@
             <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
               <properties>K8S_CONTEXT={{ k8s_context }}
 K8S_NAMESPACE={{ k8s_namespace }}
-K8S_DEPLOYMENT={{ k8s_deployment_name }}
-K8S_ENV={{ k8s_env_tag }}
+K8S_DEPLOYMENT_NAME={{ k8s_deployment_name }}
+K8S_ENV_TAG={{ k8s_env_tag }}
 DOCKER_IMAGE_NAME=$DOCKER_IMAGE_NAME
-DOCKER_COMMIT_TAG=$DOCKER_COMMIT_TAG</properties>
+DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG</properties>
             </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
           </configs>
           <projects>{{ deployer_job }}</projects>

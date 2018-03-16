@@ -22,12 +22,10 @@ spec:
           - "$(JENKINS_SECRET)"
           - "$(JENKINS_AGENT_NAME)"
         env:
-          # - name: JENKINS_SECRET
-          #   valueFrom:
-          #     secretKeyRef:
-          #       name: jenkins
-          #       key: secret.slave-1
+          - name: JENKINS_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: jenkins
+                key: secret.slave-1
           - name: JENKINS_AGENT_NAME
             value: slave-1
-          - name: JENKINS_SECRET
-            value: f447cf73c6f5ef74b0d7745590d82893d5a86132b6977d184ae2a457183a9b02

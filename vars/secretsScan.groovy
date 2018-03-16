@@ -15,8 +15,11 @@ def call(body) {
 
   print config
 
-  def jobDockerDaemonHost = config.dockerDaemonHost
-  def jobJenkinsNode = config.jenkinsNode
+  // Docker Daemon
+  def jobDockerDaemonHost  = config.jobDockerDaemonHost ?: params.DOCKER_DAEMON_HOST
+  def jobDockerDaemonDnsDiscovery  = params.DOCKER_DAEMON_DNS_DISCOVERY
+  def jobDockerDaemonPort  = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
+  def jobJenkinsNode       = config.jenkinsNode ?: params.JENKINS_NODE
 
   def jobGitRepoUrl       = params.GIT_REPO_URL
   def jobGitCredentialsId = params.GIT_CREDENTIALS_ID
@@ -26,6 +29,7 @@ def call(body) {
   def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
   println "disableSubmodules: ${jobDisableSubmodules}"
 
+  def jobDockerRegistry  = params.DOCKER_REGISTRY   ?: DefaultValues.defaultDockerRegistry
   def jobDockerImageName = params.DOCKER_IMAGE_NAME
   def jobDockerImageTag  = params.DOCKER_IMAGE_TAG
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID
@@ -43,14 +47,18 @@ def call(body) {
   slack_i.send('good', "*START* secret-scan (secretsScan)")
 
   exit_code = dockerSlaveRunner {
-    dockerDaemonHost = jobDockerDaemonHost // "internal-docker.wize.mx"
-    jenkinsNode = jobJenkinsNode // "devops1"
+    dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
+    dockerDaemonHost = jobDockerDaemonHost
+    dockerDaemonPort = jobDockerDaemonPort
+    jenkinsNode = jobJenkinsNode
+
     disableSubmodules = jobDisableSubmodules // "true"
 
     gitRepoUrl = jobGitRepoUrl
     gitCredentialsId = jobGitCredentialsId
     gitSha = jobGitSha
 
+    dockerRegistry = jobDockerRegistry
     dockerImageName = jobDockerImageName
     dockerImageTag = jobDockerImageTag
     dockerRegistryCredentialsId = jobDockerRegistryCredentialsId

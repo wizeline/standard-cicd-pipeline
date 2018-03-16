@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
-
 from jenkinsctl.main import logger
 from jenkinsctl.utils import JenkinsCustom
 
@@ -26,10 +24,4 @@ class AbstractFlow:
                 raise Exception("Parameter error")
 
     def load_j_server(self):
-        jenkins_url = os.environ['JENKINS_URL']
-
-        self.j_server = JenkinsCustom(
-          jenkins_url=jenkins_url,
-          username=os.environ['JENKINS_USER'],
-          password=os.environ['JENKINS_TOKEN']
-        )
+        self.j_server = JenkinsCustom.create_j_server()

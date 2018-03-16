@@ -16,7 +16,6 @@ class TerraformFlow(AbstractFlow):
     prefix = ""
     default_params = {
         "git_repo_url": "",
-        "git_credentials_id": "",
         "git_sha": "",
         "tf_source_relative_path": "",
         "tf_aws_access_credentials_id": "",
@@ -25,34 +24,26 @@ class TerraformFlow(AbstractFlow):
         "tf_aws_backend_bucket_region": "",
         "tf_aws_backend_bucket_key_path": "",
         "slack_channel_name": "jenkins",
-        "git_standard_cicd_credentials_id":
-            "b9abf261-0552-45f2-972d-08f3800d3d4f",
         "git_credentials_id": "b9abf261-0552-45f2-972d-08f3800d3d4f",
-        "git_standard_cicd_version": "develop",
         "docker_registry_credentials_id":
             "d656f8b1-dcf6-4737-83c1-c9199fb02463",
     }
 
-    def __init__(self, prefix=""):
+    def __init__(self, prefix="", name="", folder=None):
         self.prefix = prefix
+        self.name = name
+        self.folder = folder
         if not self.prefix:
             raise Exception("prefix arg is required")
+        if not self.name:
+            raise Exception("name arg is required")
 
     def _load_fields(self):
         self.load_j_server()
-        self._load_project_folder()
         self._load_terraform_control()
 
-    def _load_project_folder(self):
-        self.project_folder_name = f"{self.prefix}-folder"
-        self.project_folder = JobTemplate(
-          jenkins_object=self.j_server,
-          name=self.project_folder_name,
-          template_file=f'{TEMPLATES_FOLDERS_DIR}/jenkins-folder.xml.j2',
-          parameters=self.parameters)
-
     def _load_terraform_control(self):
-        self.terraform_control_name = f"{self.prefix}-terraform-control"
+        self.terraform_control_name = f"{self.prefix}-{self.name}-terraform-control"
         self.terraform_control = JobTemplate(
           jenkins_object=self.j_server,
           name=self.terraform_control_name,
@@ -62,5 +53,4 @@ class TerraformFlow(AbstractFlow):
     def create(self):
         self.validate_params()
         self._load_fields()
-        self.project_folder.create()
-        self.terraform_control.create(folder=self.project_folder_name)
+        self.terraform_control.create(folder=self.folder)

@@ -1,5 +1,6 @@
 //#!Groovy
 import org.wizeline.DefaultValues
+import org.wizeline.DockerdDiscovery
 
 def call(body) {
 
@@ -63,7 +64,7 @@ def call(body) {
 
   // For service discovery only
   def dockerDaemonHost = config.dockerDaemonHost
-  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DefaultValues.defaultDockerDaemonUrl
+  def dockerDaemonDnsDiscovery  = config.dockerDaemonDnsDiscovery  ?: DefaultValues.defaultdockerDaemonDnsDiscovery
   def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
 
@@ -118,19 +119,17 @@ chmod +x init.sh
 
           // Using a load balancer get the ip of a dockerdaemon and keep it for
           // future use.
-          if (!dockerDaemonHost){
-            dockerDaemonHost = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
-          }
-          dockerDaemon = "tcp://${dockerDaemonHost}:${dockerDaemonPort}"
+          dockerDaemon = DockerdDiscovery.getDockerDaemon(this, dockerDaemonHost, dockerDaemonPort, dockerDaemonDnsDiscovery)
 
           env.DOCKER_TLS_VERIFY = ""
 
           echo "Using remote docker daemon: ${dockerDaemon}"
           docker_bin="docker -H $dockerDaemon"
+          env.DOCKER_TLS_VERIFY = ""
 
           sh "$docker_bin version"
 
-          sh "$docker_bin login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD devops.wize.mx:5000"
+          sh "echo \"$DOCKER_REGISTRY_PASSWORD\" | $docker_bin login -u $DOCKER_REGISTRY_USERNAME --password-stdin $dockerRegistry"
 
           // Call the runner container
           exit_code = sh script: """

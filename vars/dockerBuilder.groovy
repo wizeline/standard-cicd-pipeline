@@ -1,5 +1,6 @@
 //#!Groovy
 import org.wizeline.DefaultValues
+import org.wizeline.DockerdDiscovery
 
 def call(body) {
 
@@ -52,6 +53,7 @@ def call(body) {
   def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId
   def dockerRegistry              = config.dockerRegistry           ?: DefaultValues.defaultDockerRegistry
   def dockerEnvTag                = config.dockerEnvTag             ?: DefaultValues.defaultDockerEnvTag
+  def dockerEnvTags               = config.dockerEnvTags             ?: DefaultValues.defaultDockerEnvTags
   def dockerSourceRelativePath    = config.dockerSourceRelativePath ?: DefaultValues.defaultDockerSourceRelativePath
   def dockerDockerfileAbsolutePath = config.dockerDockerfileAbsolutePath ?: DefaultValues.defaultDockerDockerfileAbsolutePath
   def dockerDockerfile            = config.dockerDockerfile         ?: DefaultValues.defaultDockerDockerfile
@@ -59,7 +61,7 @@ def call(body) {
 
   // For service discovery only
   def dockerDaemonHost = config.dockerDaemonHost
-  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DefaultValues.defaultDockerDaemonUrl
+  def dockerDaemonDnsDiscovery  = config.dockerDaemonDnsDiscovery  ?: DefaultValues.defaultdockerDaemonDnsDiscovery
   def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
 
@@ -104,22 +106,20 @@ def call(body) {
                          usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
 
           def workspace = pwd()
-          def job_as_service_image = "devops.wize.mx:5000/jobs-as-a-service"
+          def job_as_service_image = DefaultValues.defaultJobsAsAServiceImage
 
           // Using a load balancer get the ip of a dockerdaemon and keep it for
           // future use.
-          if (!dockerDaemonHost){
-            dockerDaemonHost = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
-          }
-          dockerDaemon = "tcp://${dockerDaemonHost}:${dockerDaemonPort}"
+          dockerDaemon = DockerdDiscovery.getDockerDaemon(this, dockerDaemonHost, dockerDaemonPort, dockerDaemonDnsDiscovery)
 
-          def dockerCommitTag = (dockerNoTagCheck == "true") ? dockerEnvTag : gitSha
+          def dockerCommitTag = dockerEnvTag
 
           env_vars = """DOCKER_REGISTRY=$dockerRegistry
 DOCKER_IMAGE_NAME=$dockerImageName
 DOCKER_DOCKERFILE_ABS_PATH=$dockerDockerfileAbsolutePath
 DOCKER_DOCKERFILE=$dockerDockerfile
 DOCKER_ENV_TAG=$dockerEnvTag
+DOCKER_ENV_TAGS=$dockerEnvTags
 NO_TAG_CHECK=$dockerNoTagCheck
 DOCKER_COMMIT_TAG=$dockerCommitTag
 DOCKER_TLS_VERIFY=""
@@ -132,10 +132,11 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
 
           echo "Using remote docker daemon: ${dockerDaemon}"
           docker_bin="docker -H $dockerDaemon"
+          env.DOCKER_TLS_VERIFY = ""
 
           sh "$docker_bin version"
 
-          sh "$docker_bin login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD devops.wize.mx:5000"
+          sh "echo \"$DOCKER_REGISTRY_PASSWORD\" | $docker_bin login -u $DOCKER_REGISTRY_USERNAME --password-stdin $dockerRegistry"
 
           // Call the buidler container
           exit_code = sh script: """

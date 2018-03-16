@@ -40,6 +40,39 @@
           <description></description>
           <defaultValue>{{ docker_source_rel_path }}</defaultValue>
         </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_DOCKERFILE</name>
+          <description></description>
+          <defaultValue>{{ docker_dockerfile }}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_REGISTRY</name>
+          <description></description>
+          <defaultValue>{{ docker_registry }}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+
+        {% if docker_daemon_host %}
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_DAEMON_HOST</name>
+          <description></description>
+          <defaultValue>{{ docker_daemon_host }}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        {% endif %}
+        {% if docker_daemon_dns_discovery %}
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_DAEMON_DNS_DISCOVERY</name>
+          <description></description>
+          <defaultValue>{{ docker_daemon_dns_discovery }}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        {% endif %}
+        {% if docker_registry_credentials_id %}
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_REG_CREDENTIALS_ID</name>
+          <description></description>
+          <defaultValue>{{ docker_registry_credentials_id }}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        {% endif %}
+
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@1.9.0">
@@ -60,10 +93,7 @@
     </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
   </properties>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.18">
-    <script>status = genericDispatcher {
-    jobDockerDaemonHost = &quot;internal-docker.wize.mx&quot;
-    jobJenkinsNode = &quot;devops1&quot;
-}
+    <script>status = genericDispatcher {}
 println &quot;${status}&quot;
 
 build job: &quot;{{ secrets_scan_job }}&quot;,

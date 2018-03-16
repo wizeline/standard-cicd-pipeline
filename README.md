@@ -16,6 +16,27 @@ These manifests deploy a jenkins master and two slaves.
 
 Some manual configuration has to be made to connect the slave nodes.
 
+**Recomended plugins:**
+
+-   AnsiColor Plugin
+-   Extended Read Permission Plugin
+-   GitHub Authentication
+-   GitHub Organization Folder
+-   GitHub Pull Request Builder
+-   Green Balls
+-   Metrics Plugin
+-   Pipeline
+-   Role-based Authorization Strategy
+-   Slack Notification
+-   Validating String Parameter Plugin
+-   Workspace Cleanup
+-   Amazon ECR plugin
+-   Blue Ocean
+-   HTTP Request
+-   Notification plugin
+
+
+
 # Terraform
 
 In this dir you will find script to create a cluster of docker daemons.

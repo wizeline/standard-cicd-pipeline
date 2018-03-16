@@ -1,6 +1,7 @@
 //#!Groovy
 import org.wizeline.SlackI
 import org.wizeline.DefaultValues
+import org.wizeline.DockerdDiscovery
 
 def is_main_branch(){
   return params.BRANCH == "origin/develop" ||
@@ -8,7 +9,16 @@ def is_main_branch(){
   params.BRANCH == "origin/master" ||
   params.BRANCH == "develop" ||
   params.BRANCH == "stage" ||
-  params.BRANCH == "master"
+  params.BRANCH == "master" ||
+  params.BRANCH == "origin/development" ||
+  params.BRANCH == "origin/staging" ||
+  params.BRANCH == "development" ||
+  params.BRANCH == "staging"
+}
+
+def is_force_build(){
+  print "FORCE_BUILD: ${params.FORCE_BUILD}"
+  return params.FORCE_BUILD
 }
 
 def call(body) {
@@ -38,15 +48,19 @@ def call(body) {
   def jobDockerImageName             = params.DOCKER_IMAGE_NAME
   def jobDockerSourceRelativePath    = params.DOCKER_SOURCE_REL_PATH
   def jobDockerRegistryCredentialsId = params.DOCKER_REG_CREDENTIALS_ID ?: DefaultValues.defaultDockerRegistryCredentialsId
+  def jobDockerRegistry              = params.DOCKER_REGISTRY     ?: DefaultValues.defaultDockerRegistry
+  def jobDockerDockerfile            = params.DOCKER_DOCKERFILE   ?: DefaultValues.defaultDockerDockerfile
+  def jobDockerNoTagCheck            = params.DOCKER_NO_TAG_CHECK ?: DefaultValues.defaultDockerNoTagCheck
 
   // Docker Daemon
-  def jobDockerDaemonHost  = config.jobDockerDaemonHost
+  def jobDockerDaemonHost  = config.jobDockerDaemonHost ?: params.DOCKER_DAEMON_HOST
+  def jobDockerDaemonDnsDiscovery  = params.DOCKER_DAEMON_DNS_DISCOVERY
   def jobDockerDaemonPort  = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
 
   // Slack
   def jobSlackChannelName  = params.SLACK_CHANNEL_NAME
 
-  def jobJenkinsNode       = config.jobJenkinsNode
+  def jobJenkinsNode       = config.jobJenkinsNode ?: params.JENKINS_NODE
 
   def disableLint = config.disableLint ?: 'false'
   def disableUnitTests = config.disableUnitTests ?: 'false'
@@ -83,6 +97,7 @@ def call(body) {
 
             dockerImageName = jobDockerImageName
             dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+            dockerRegistry = jobDockerRegistry
             slackChannelName = jobSlackChannelName
 
             dockerEnvTag = test_tag
@@ -90,9 +105,10 @@ def call(body) {
             dockerNoTagCheck = "true"
             dockerSourceRelativePath = jobDockerSourceRelativePath
 
-            // dockerDaemonUrl vs dockerDaemonHost
-            // dockerDaemonUrl: will select a dockerd from a elb
+            // dockerDaemonDnsDiscovery vs dockerDaemonHost
+            // dockerDaemonDnsDiscovery: will select a dockerd from a elb
             // dockerDaemonHost: uses specific dockerd
+            dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
             dockerDaemonHost = jobDockerDaemonHost
             dockerDaemonPort = jobDockerDaemonPort
             jenkinsNode = jobJenkinsNode
@@ -102,8 +118,10 @@ def call(body) {
           dockerImageName = jobDockerImageName
           dockerImageTag = test_tag
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          dockerRegistry = jobDockerRegistry
           slackChannelName = jobSlackChannelName
 
+          dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
           dockerDaemonHost = jobDockerDaemonHost
           dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
@@ -130,6 +148,7 @@ def call(body) {
 
             dockerImageName = jobDockerImageName
             dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+            dockerRegistry = jobDockerRegistry
             slackChannelName = jobSlackChannelName
 
             dockerEnvTag = lint_tag
@@ -137,6 +156,7 @@ def call(body) {
             dockerNoTagCheck = "true"
             dockerSourceRelativePath = jobDockerSourceRelativePath
 
+            dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
             dockerDaemonHost = jobDockerDaemonHost
             dockerDaemonPort = jobDockerDaemonPort
             jenkinsNode = jobJenkinsNode
@@ -146,8 +166,10 @@ def call(body) {
           dockerImageName = jobDockerImageName
           dockerImageTag = lint_tag
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          dockerRegistry = jobDockerRegistry
           slackChannelName = jobSlackChannelName
 
+          dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
           dockerDaemonHost = jobDockerDaemonHost
           dockerDaemonPort = jobDockerDaemonPort
           jenkinsNode = jobJenkinsNode
@@ -172,23 +194,30 @@ def call(body) {
     currentBuild.result = 'SUCCESS'
   }
 
-  if (is_main_branch()) {
+  if (is_main_branch() || is_force_build()) {
     stage("build-image:") {
+      def branchTag = jobGitShaNoOrigin.replace("/", "_").replace("origin", "")
       dockerBuilder {
-          gitRepoUrl = jobGitRepoUrl
-          gitCredentialsId = jobGitCredentialsId
-          gitSha  = jobGitShaCommit
+          gitRepoUrl        = jobGitRepoUrl
+          gitCredentialsId  = jobGitCredentialsId
+          gitSha            = jobGitShaCommit
           disableSubmodules = jobDisableSubmodules
 
-          dockerImageName = jobDockerImageName
+          dockerImageName             = jobDockerImageName
+          dockerEnvTag                = return_hash["git-sha"]
+          dockerEnvTags               = "$branchTag"
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-          slackChannelName = jobSlackChannelName
+          dockerRegistry              = jobDockerRegistry
+          dockerNoTagCheck            = jobDockerNoTagCheck
+          slackChannelName            = jobSlackChannelName
 
           dockerSourceRelativePath = jobDockerSourceRelativePath
+          dockerDockerfile         = jobDockerDockerfile
 
+          dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
           dockerDaemonHost = jobDockerDaemonHost
           dockerDaemonPort = jobDockerDaemonPort
-          jenkinsNode = jobJenkinsNode
+          jenkinsNode      = jobJenkinsNode
       }
       return_hash["build-image"] = "success"
     }

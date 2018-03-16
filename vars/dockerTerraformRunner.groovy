@@ -1,5 +1,6 @@
 //#!Groovy
 import org.wizeline.DefaultValues
+import org.wizeline.DockerdDiscovery
 
 def call(body) {
 
@@ -90,7 +91,7 @@ def call(body) {
 
   // For service discovery only
   def dockerDaemonHost = config.dockerDaemonHost
-  def dockerDaemonUrl  = config.dockerDaemonUrl  ?: DefaultValues.defaultDockerDaemonUrl
+  def dockerDaemonDnsDiscovery  = config.dockerDaemonDnsDiscovery  ?: DefaultValues.defaultdockerDaemonDnsDiscovery
   def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
 
@@ -147,33 +148,34 @@ EOF"""
 
           // Using a load balancer get the ip of a dockerdaemon and keep it for
           // future use.
-          if (!dockerDaemonHost){
-            dockerDaemonHost = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
-          }
-          dockerDaemon = "tcp://${dockerDaemonHost}:${dockerDaemonPort}"
+          dockerDaemon = DockerdDiscovery.getDockerDaemon(this, dockerDaemonHost, dockerDaemonPort, dockerDaemonDnsDiscovery)
 
           env.DOCKER_TLS_VERIFY = ""
 
-          env.AWS_ACCESS_KEY_ID = AWS_TF_USERNAME
-          env.AWS_SECRET_ACCESS_KEY = AWS_TF_PASSWORD
-          env.AWS_DEFAULT_REGION = tfAwsRegion
-          env.AWS_TF_BACKEND_BUCKET = tfAwsBackendBucketName
-          env.AWS_TF_BACKEND_REGION = tfAwsBackendBucketRegion
-          env.AWS_TF_BACKEND_KEY_PATH = tfAwsBackendBucketKeyPath
+          env_vars = """DOCKER_TLS_VERIFY=""
+AWS_ACCESS_KEY_ID=$AWS_TF_USERNAME
+AWS_SECRET_ACCESS_KEY=$AWS_TF_PASSWORD
+AWS_DEFAULT_REGION=$tfAwsRegion
+AWS_TF_BACKEND_BUCKET=$tfAwsBackendBucketName
+AWS_TF_BACKEND_REGION=$tfAwsBackendBucketRegion
+AWS_TF_BACKEND_KEY_PATH=$tfAwsBackendBucketKeyPath
+TF_SOURCE_RELATIVE_PATH=$tfSourceRelativePath
+"""
+
+          writeFile file: ".env", text: env_vars
 
           echo "Using remote docker daemon: ${dockerDaemon}"
           docker_bin="docker -H $dockerDaemon"
 
           sh "$docker_bin version"
 
-          sh "$docker_bin login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD devops.wize.mx:5000"
+          sh "$docker_bin login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $dockerRegistry"
 
           // Call the buidler container
           exit_code = sh script: """
-          env | sort | grep -E \"AWS_\" > .env
           $docker_bin rmi -f $dockerRegistry/$dockerImageName:$dockerImageTag || true
           docker_id=\$($docker_bin create --env-file .env $dockerRegistry/$dockerImageName:$dockerImageTag $tfCommand)
-          $docker_bin cp $workspace/$tfSourceRelativePath/. \$docker_id:/project
+          $docker_bin cp $workspace/. \$docker_id:/project
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
           rm .env
 
