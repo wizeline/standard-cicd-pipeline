@@ -204,6 +204,7 @@ def call(body) {
           disableSubmodules = jobDisableSubmodules
 
           dockerImageName             = jobDockerImageName
+          dockerEnvTag                = return_hash["git-sha"]
           dockerEnvTags               = "$branchTag"
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
           dockerRegistry              = jobDockerRegistry

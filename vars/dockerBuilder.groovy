@@ -112,7 +112,7 @@ def call(body) {
           // future use.
           dockerDaemon = DockerdDiscovery.getDockerDaemon(this, dockerDaemonHost, dockerDaemonPort, dockerDaemonDnsDiscovery)
 
-          def dockerCommitTag = gitSha
+          def dockerCommitTag = dockerEnvTag
 
           env_vars = """DOCKER_REGISTRY=$dockerRegistry
 DOCKER_IMAGE_NAME=$dockerImageName
