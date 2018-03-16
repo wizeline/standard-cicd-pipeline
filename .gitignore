@@ -4,3 +4,6 @@ terraform.tfstate.backup
 k8s/jenkins/deployments/options
 secret.*
 .DS_Store
+.env
+.env.jenkins-ci
+__pycache__

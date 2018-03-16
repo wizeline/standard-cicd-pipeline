@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<com.cloudbees.hudson.plugins.folder.Folder plugin="cloudbees-folder@5.13">
+  <actions/>
+  <description></description>
+  <properties>
+    <org.jenkinsci.plugins.workflow.libs.FolderLibraries plugin="workflow-cps-global-lib@2.4">
+      <libraries>
+        <org.jenkinsci.plugins.workflow.libs.LibraryConfiguration>
+          <name>standard-cicd-pipeline</name>
+          <retriever class="org.jenkinsci.plugins.workflow.libs.SCMRetriever">
+            <scm class="hudson.plugins.git.GitSCM" plugin="git@3.0.0">
+              <configVersion>2</configVersion>
+              <userRemoteConfigs>
+                <hudson.plugins.git.UserRemoteConfig>
+                  <url>git@github.com:wizeline/standard-cicd-pipeline.git</url>
+                  <credentialsId>{{ git_standard_cicd_credentials_id }}</credentialsId>
+                </hudson.plugins.git.UserRemoteConfig>
+              </userRemoteConfigs>
+              <branches>
+                <hudson.plugins.git.BranchSpec>
+                  <name>*/{{ git_standard_cicd_version }}</name>
+                </hudson.plugins.git.BranchSpec>
+              </branches>
+              <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+              <submoduleCfg class="list"/>
+              <extensions/>
+            </scm>
+          </retriever>
+          <defaultVersion>{{ git_standard_cicd_version }}</defaultVersion>
+          <implicit>true</implicit>
+          <allowVersionOverride>true</allowVersionOverride>
+        </org.jenkinsci.plugins.workflow.libs.LibraryConfiguration>
+      </libraries>
+    </org.jenkinsci.plugins.workflow.libs.FolderLibraries>
+  </properties>
+  <views>
+    <hudson.model.AllView>
+      <owner class="com.cloudbees.hudson.plugins.folder.Folder" reference="../../.."/>
+      <name>All</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+    </hudson.model.AllView>
+  </views>
+  <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
+  <healthMetrics>
+    <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric/>
+  </healthMetrics>
+  <icon class="com.cloudbees.hudson.plugins.folder.icons.StockFolderIcon"/>
+</com.cloudbees.hudson.plugins.folder.Folder>

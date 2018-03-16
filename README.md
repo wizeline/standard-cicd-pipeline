@@ -16,6 +16,27 @@ These manifests deploy a jenkins master and two slaves.
 
 Some manual configuration has to be made to connect the slave nodes.
 
+**Recomended plugins:**
+
+-   AnsiColor Plugin
+-   Extended Read Permission Plugin
+-   GitHub Authentication
+-   GitHub Organization Folder
+-   GitHub Pull Request Builder
+-   Green Balls
+-   Metrics Plugin
+-   Pipeline
+-   Role-based Authorization Strategy
+-   Slack Notification
+-   Validating String Parameter Plugin
+-   Workspace Cleanup
+-   Amazon ECR plugin
+-   Blue Ocean
+-   HTTP Request
+-   Notification plugin
+
+
+
 # Terraform
 
 In this dir you will find script to create a cluster of docker daemons.
@@ -39,3 +60,11 @@ Shared Library for jenkins standar pipelines.
 # Architecture Diagram for jenkins-dockerds
 
 ![jenkins-dockerds-architecture](docs/jenkins-ci-docker-arch.png)
+
+# References
+
+-   [Continuous Integration Pipeline Technical Specification](https://docs.google.com/document/d/1QeNk6OREJXRZTiz7Fq46wh3gRA-dA6O9VeqRybrtdXc/edit)
+-   [jenkins-jobs-as-service-py](https://phabricator.wizeline.com/diffusion/28/)
+-   [docker-images](https://github.com/wizeline/docker-images)
+-   [docker-base-images](https://github.com/wizeline/docker-base-images)
+-   [DevOps Roadmap - Engineering Tools & Standards](https://wizeline.atlassian.net/wiki/spaces/DFS/pages/185630724/DevOps+Roadmap+-+Engineering+Tools+Standards)

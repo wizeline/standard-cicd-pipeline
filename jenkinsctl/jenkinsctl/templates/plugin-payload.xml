@@ -1,0 +1,5 @@
+<jenkins>
+  {% for plugin in plugins %}
+    <install plugin="{{ plugin }}@latest" />
+  {% endfor %}
+</jenkins>

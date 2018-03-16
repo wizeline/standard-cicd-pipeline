@@ -1,4 +1,7 @@
 //#!Groovy
+import org.wizeline.DefaultValues
+import org.wizeline.DockerdDiscovery
+
 def call(body) {
 
   def config = [:]
@@ -12,6 +15,7 @@ def call(body) {
   echo "dockerRunner.groovy"
   print config
 
+  // Validations
   if (!config.dockerImageName) {
     error 'You must provide a dockerImageName'
   }
@@ -24,20 +28,23 @@ def call(body) {
     error 'You must provide a dockerRegistryCredentialsId'
   }
 
-  def slackChannelName = config.slackChannelName ?: 'jenkins'
-  def slackToken = config.slackToken
-  def muteSlack = config.muteSlack ?: 'false'
+  // Slack info
+  def slackChannelName = config.slackChannelName ?: DefaultValues.defaultSlackChannelName
+  def slackToken       = config.slackToken
+  def muteSlack        = config.muteSlack ?: DefaultValues.defaultMuteSlack
   muteSlack = (muteSlack == 'true')
 
-  def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: ''
   // For service discovery only
-  def dockerDaemonUrl = config.dockerDaemonUrl ?: 'internal-docker-daemon-elb.wize.mx'
-  def dockerRegistry = config.dockerRegistry ?: 'devops.wize.mx:5000'
-  def dockerImageName = config.dockerImageName
-  def dockerImageTag = config.dockerImageTag
   def dockerDaemonHost = config.dockerDaemonHost
-  def dockerDaemonPort = config.dockerDaemonPort ?: '4243'
+  def dockerDaemonDnsDiscovery  = config.dockerDaemonDnsDiscovery  ?: DefaultValues.defaultdockerDaemonDnsDiscovery
+  def dockerDaemonPort = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
   def dockerDaemon
+
+  // Image Info
+  def dockerRegistryCredentialsId = config.dockerRegistryCredentialsId ?: DefaultValues.defaultDockerRegistryCredentialsId
+  def dockerRegistry   = config.dockerRegistry   ?: DefaultValues.defaultDockerRegistry
+  def dockerImageName  = config.dockerImageName
+  def dockerImageTag   = config.dockerImageTag
 
   def jenkinsNode = config.jenkinsNode
 
@@ -55,34 +62,34 @@ def call(body) {
 
           // Using a load balancer get the ip of a dockerdaemon and keep it for
           // future use.
-          if (!dockerDaemonHost){
-            dockerDaemonHost = sh(script: "dig +short ${dockerDaemonUrl} | head -n 1", returnStdout: true).trim()
-          }
-          dockerDaemon = "tcp://${dockerDaemonHost}:${dockerDaemonPort}"
+          dockerDaemon = DockerdDiscovery.getDockerDaemon(this, dockerDaemonHost, dockerDaemonPort, dockerDaemonDnsDiscovery)
 
           env.DOCKER_TLS_VERIFY = ""
 
           echo "Using remote docker daemon: ${dockerDaemon}"
           docker_bin="docker -H $dockerDaemon"
+          env.DOCKER_TLS_VERIFY = ""
 
           sh "$docker_bin version"
 
-          sh "$docker_bin login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD devops.wize.mx:5000"
+          sh "echo \"$DOCKER_REGISTRY_PASSWORD\" | $docker_bin login -u $DOCKER_REGISTRY_USERNAME --password-stdin $dockerRegistry"
 
           // Call the buidler container
           exit_code = sh script: """
-          $docker_bin rmi -f $dockerRegistry/$dockerImageName || true
+          set +e
+
+          $docker_bin pull $dockerRegistry/$dockerImageName:$dockerImageTag || true
           docker_id=\$($docker_bin create $dockerRegistry/$dockerImageName:$dockerImageTag)
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
 
-          [ ! -z "\$EXIT_CODE" ] && exit \$EXIT_CODE;
+          [ -n "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           exit 0
           """, returnStatus: true
 
           // Ensure every exited container has been removed
           sh script: """
           containers=\$($docker_bin ps -a | grep Exited | awk '{print \$1}')
-          [ -n "\$containers" ] && $docker_bin rm -f \$containers && $docker_bin rmi -f $dockerRegistry/$dockerImageName || exit 0
+          [ -n "\$containers" ] && $docker_bin rm \$containers || exit 0
           """, returnStatus: true
 
           if (exit_code != 0 && exit_code != 3){
@@ -91,7 +98,7 @@ def call(body) {
             if (config.slackChannelName && !muteSlack){
               slackSend channel:"#${slackChannelName}",
                         color:'danger',
-                        message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
+                        message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
             }
             error("FAILURE - Run container returned non 0 exit code")
             return 1
@@ -102,7 +109,7 @@ def call(body) {
           if (config.slackChannelName && !muteSlack){
             slackSend channel:"#${slackChannelName}",
                       color:'good',
-                      message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
+                      message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
           }
         }
       }
@@ -111,7 +118,7 @@ def call(body) {
       if (config.slackChannelName && !muteSlack){
         slackSend channel:"#${slackChannelName}",
                   color:'danger',
-                  message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName},  dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getuser()}"
+                  message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName},  dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
       }
       throw err
     }
