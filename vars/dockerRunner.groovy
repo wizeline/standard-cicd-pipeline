@@ -74,13 +74,26 @@ def call(body) {
 
           sh "echo \"$DOCKER_REGISTRY_PASSWORD\" | $docker_bin login -u $DOCKER_REGISTRY_USERNAME --password-stdin $dockerRegistry"
 
-          // Call the buidler container
+
+          // Feed the external environment vars
+          def env_file = sh script: """
+          env | grep -e '^DOCKER_ENV_' || printf 'DOCKER_ENV_NULL=true'
+
+          """, returnStdout: true
+
+          // Create environment file for docker
+          env_file = env_file.replaceAll("DOCKER_ENV_", "")
+          writeFile file: "docker_env", text: env_file
+
+          // Call the runner container
           exit_code = sh script: """
           set +e
 
           $docker_bin pull $dockerRegistry/$dockerImageName:$dockerImageTag || true
-          docker_id=\$($docker_bin create $dockerRegistry/$dockerImageName:$dockerImageTag)
+          docker_id=\$($docker_bin create --env-file docker_env $dockerRegistry/$dockerImageName:$dockerImageTag)
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
+
+          rm -f docker_env
 
           [ -n "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           exit 0
