@@ -88,7 +88,8 @@ def call(body) {
   tasks["unit_tests"] = {
     stage("unit-tests:"){
       if (disableUnitTests != 'true'){
-        def test_tag = "unit-test${return_hash["git-sha"]}"
+        // def test_tag = "unit-test-${return_hash["git-sha"]}"
+        def test_tag = "unit-test"
         dockerBuilder {
             gitRepoUrl = jobGitRepoUrl
             gitCredentialsId = jobGitCredentialsId
@@ -139,7 +140,8 @@ def call(body) {
   tasks["lint"] = {
     stage("lint:"){
       if (disableLint != 'true'){
-        def lint_tag = "lint-${return_hash["git-sha"]}"
+        // def lint_tag = "lint-${return_hash["git-sha"]}"
+        def lint_tag = "lint"
         dockerBuilder {
             gitRepoUrl = jobGitRepoUrl
             gitCredentialsId = jobGitCredentialsId
