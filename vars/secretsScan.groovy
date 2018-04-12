@@ -13,6 +13,7 @@ def call(body) {
     body()
   }
 
+  echo "secretsScan.groovy"
   print config
 
   // Docker Daemon

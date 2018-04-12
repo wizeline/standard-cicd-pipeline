@@ -199,6 +199,7 @@ def call(body) {
   if (is_main_branch() || is_force_build()) {
     stage("build-image:") {
       def branchTag = jobGitShaNoOrigin.replace("/", "_").replace("origin", "")
+      def noTagCheck = is_force_build() ? "true" : "false"
       dockerBuilder {
           gitRepoUrl        = jobGitRepoUrl
           gitCredentialsId  = jobGitCredentialsId
@@ -215,6 +216,7 @@ def call(body) {
 
           dockerSourceRelativePath = jobDockerSourceRelativePath
           dockerDockerfile         = jobDockerDockerfile
+          dockerNoTagCheck         = noTagCheck
 
           dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
           dockerDaemonHost = jobDockerDaemonHost

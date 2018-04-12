@@ -12,7 +12,7 @@ def call(body) {
     body()
   }
 
-  echo "dockerRunner.groovy"
+  echo "dockerSlaveRunner.groovy"
   print config
 
   // Validations
