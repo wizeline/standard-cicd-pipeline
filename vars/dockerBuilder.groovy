@@ -106,7 +106,7 @@ def call(body) {
                          usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
 
           def workspace = pwd()
-          def job_as_service_image = DefaultValues.defaultJobsAsAServiceImage
+          def job_as_service_image = "${DefaultValues.defaultJobsAsAServiceImage}:${DefaultValues.defaultJobsAsAServiceImageTag}"
 
           // Using a load balancer get the ip of a dockerdaemon and keep it for
           // future use.
