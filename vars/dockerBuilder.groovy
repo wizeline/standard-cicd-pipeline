@@ -114,6 +114,12 @@ def call(body) {
 
           def dockerCommitTag = dockerEnvTag
 
+          // Feed the external build args
+          def build_args = sh script: """
+          env | grep -e '^DOCKER_ARG_' || true'
+
+          """, returnStdout: true
+
           env_vars = """DOCKER_REGISTRY=$dockerRegistry
 DOCKER_IMAGE_NAME=$dockerImageName
 DOCKER_DOCKERFILE_ABS_PATH=$dockerDockerfileAbsolutePath
@@ -126,6 +132,7 @@ DOCKER_TLS_VERIFY=""
 DOCKER_DAEMON_URL=$dockerDaemon
 DOCKER_REGISTRY_PASSWORD=$DOCKER_REGISTRY_PASSWORD
 DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
+$build_args
 """
 
           writeFile file: ".env", text: env_vars
