@@ -116,8 +116,7 @@ def call(body) {
 
           // Feed the external build args
           def build_args = sh script: """
-          env | grep -e '^DOCKER_ARG_' || true'
-
+          env | grep -e '^DOCKER_ARG_' || true
           """, returnStdout: true
 
           env_vars = """DOCKER_REGISTRY=$dockerRegistry
@@ -134,6 +133,7 @@ DOCKER_REGISTRY_PASSWORD=$DOCKER_REGISTRY_PASSWORD
 DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
 $build_args
 """
+          println(env_vars)
 
           writeFile file: ".env", text: env_vars
 
