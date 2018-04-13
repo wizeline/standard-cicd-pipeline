@@ -133,7 +133,6 @@ DOCKER_REGISTRY_PASSWORD=$DOCKER_REGISTRY_PASSWORD
 DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
 $build_args
 """
-          println(env_vars)
 
           writeFile file: ".env", text: env_vars
 
