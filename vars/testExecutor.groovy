@@ -3,6 +3,11 @@ import org.wizeline.SlackI
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
 
+def is_force_build(){
+  print "FORCE_BUILD: ${params.FORCE_BUILD}"
+  return params.FORCE_BUILD
+}
+
 def call(body) {
 
   def config = [:]
@@ -63,7 +68,8 @@ def call(body) {
   }
 
   stage("tests-execution:"){
-    def test_image_tag = jobGitShaCommit
+    def branchTag = jobGitSha.replace("/", "_").replace("origin", "")
+    def noTagCheck = is_force_build() ? "true" : "false"
 
     dockerBuilder {
       gitRepoUrl        = jobGitRepoUrl
@@ -76,9 +82,9 @@ def call(body) {
       dockerRegistry   = jobDockerRegistry
       slackChannelName = jobSlackChannelName
 
-      dockerEnvTag     = test_image_tag
+      dockerEnvTag     = branchTag
       dockerDockerfile = jobDockerDockerfile
-      dockerNoTagCheck = "true"
+      dockerNoTagCheck = noTagCheck
       dockerSourceRelativePath = jobDockerSourceRelativePath
 
       // dockerDaemonDnsDiscovery vs dockerDaemonHost
@@ -92,7 +98,7 @@ def call(body) {
 
     dockerRunner {
       dockerImageName  = jobDockerImageName
-      dockerImageTag   = test_image_tag
+      dockerImageTag   = branchTag
       dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
       dockerRegistry   = jobDockerRegistry
       slackChannelName = jobSlackChannelName
