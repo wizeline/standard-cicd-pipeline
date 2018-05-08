@@ -106,13 +106,18 @@ def call(body) {
                          usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
 
           def workspace = pwd()
-          def job_as_service_image = DefaultValues.defaultJobsAsAServiceImage
+          def job_as_service_image = "${DefaultValues.defaultJobsAsAServiceImage}:${DefaultValues.defaultJobsAsAServiceImageTag}"
 
           // Using a load balancer get the ip of a dockerdaemon and keep it for
           // future use.
           dockerDaemon = DockerdDiscovery.getDockerDaemon(this, dockerDaemonHost, dockerDaemonPort, dockerDaemonDnsDiscovery)
 
           def dockerCommitTag = dockerEnvTag
+
+          // Feed the external build args
+          def build_args = sh script: """
+          env | grep -e '^DOCKER_ARG_' || true
+          """, returnStdout: true
 
           env_vars = """DOCKER_REGISTRY=$dockerRegistry
 DOCKER_IMAGE_NAME=$dockerImageName
@@ -126,6 +131,7 @@ DOCKER_TLS_VERIFY=""
 DOCKER_DAEMON_URL=$dockerDaemon
 DOCKER_REGISTRY_PASSWORD=$DOCKER_REGISTRY_PASSWORD
 DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
+$build_args
 """
 
           writeFile file: ".env", text: env_vars
