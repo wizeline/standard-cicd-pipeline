@@ -64,6 +64,7 @@ def call(body) {
 
   def disableLint = config.disableLint ?: 'false'
   def disableUnitTests = config.disableUnitTests ?: 'false'
+  def disableBuildImage = config.disableImage ?: 'false'
 
   node {
     stage ('Checkout') {
@@ -196,7 +197,7 @@ def call(body) {
     currentBuild.result = 'SUCCESS'
   }
 
-  if (is_main_branch() || is_force_build()) {
+  if ((disableBuildImage != "true") && (is_main_branch() || is_force_build())) {
     stage("build-image:") {
       def branchTag = jobGitShaNoOrigin.replace("/", "_").replace("origin", "")
       def noTagCheck = is_force_build() ? "true" : "false"
