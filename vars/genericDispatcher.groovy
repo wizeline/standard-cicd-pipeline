@@ -64,7 +64,7 @@ def call(body) {
 
   def disableLint = config.disableLint ?: 'false'
   def disableUnitTests = config.disableUnitTests ?: 'false'
-  def disableBuildImage = config.disableImage ?: 'false'
+  def disableBuildImage = config.disableBuildImage ?: 'false'
 
   node {
     stage ('Checkout') {
