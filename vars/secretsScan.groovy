@@ -1,5 +1,6 @@
 import org.wizeline.SlackI
 import org.wizeline.DefaultValues
+import org.wizeline.InfluxMetrics
 
 def call(body) {
 
@@ -46,6 +47,18 @@ def call(body) {
   )
 
   slack_i.send('good', "*START* secret-scan (secretsScan)")
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "kubernetes-deployer",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
 
   exit_code = dockerSlaveRunner {
     dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
@@ -79,5 +92,7 @@ def call(body) {
     echo "FAILURE"
     currentBuild.result = 'FAILURE'
   }
+
+  influxdb.processBuildResult(currentBuild)
 
 }

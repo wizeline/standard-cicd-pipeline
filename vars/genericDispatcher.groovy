@@ -2,6 +2,7 @@
 import org.wizeline.SlackI
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
+import org.wizeline.InfluxMetrics
 
 def is_main_branch(){
   return params.BRANCH == "origin/develop" ||
@@ -65,6 +66,19 @@ def call(body) {
   def disableLint = config.disableLint ?: 'false'
   def disableUnitTests = config.disableUnitTests ?: 'false'
   def disableBuildImage = config.disableBuildImage ?: 'false'
+
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "app-ci-flow",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
 
   node {
     stage ('Checkout') {
@@ -227,6 +241,8 @@ def call(body) {
       return_hash["build-image"] = "success"
     }
   }
+
+  influxdb.processBuildResult(currentBuild)
 
   return return_hash
 
