@@ -1,6 +1,7 @@
 //#!Groovy
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
+import org.wizeline.InfluxMetrics
 
 def call(body) {
 
@@ -47,6 +48,19 @@ def call(body) {
   def dockerImageTag   = config.dockerImageTag
 
   def jenkinsNode = config.jenkinsNode
+
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "docker-runner",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
 
   node (jenkinsNode){
     try {
@@ -126,6 +140,9 @@ def call(body) {
           }
         }
       }
+
+      influxdb.processBuildResult(currentBuild)
+      
     } catch (err) {
       println err
       if (config.slackChannelName && !muteSlack){

@@ -1,6 +1,7 @@
 //#!Groovy
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
+import org.wizeline.InfluxMetrics
 
 def call(body) {
 
@@ -70,7 +71,18 @@ def call(body) {
   def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
   println "disableSubmodules: ${jobDisableSubmodules}"
 
-
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "docker-builder",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
 
   node (jenkinsNode){
     try{
@@ -186,18 +198,18 @@ $build_args
                       message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
           }
          }
-     }
-     } catch (err) {
-       println err
-       if (config.slackChannelName && !muteSlack){
-         slackSend channel:"#${slackChannelName}",
+       }
+
+     influxdb.processBuildResult(currentBuild)
+
+    } catch (err) {
+      println err
+      if (config.slackChannelName && !muteSlack){
+        slackSend channel:"#${slackChannelName}",
                    color:'danger',
                    message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
-       }
-       throw err
-     }
-
-   }
-
-
+      }
+      throw err
+    }
+  } // /node
 }
