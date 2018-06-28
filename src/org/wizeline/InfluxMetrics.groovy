@@ -62,7 +62,7 @@ public class InfluxMetrics implements Serializable {
 
   @NonCPS
   private String formatField(field){
-    return field.replace(" ", "_")
+    return field.replace(" ", "_").replace("/", "_")
   }
 
   // @NonCPS
@@ -81,7 +81,7 @@ public class InfluxMetrics implements Serializable {
     if (!(this.influxAPIAuth) || !(this.influxURL)){
       return
     }
-    def measurement_tags = "job_id=\"${this.job_id}\",job_type=${this.job_type},job_initiator=${this.job_initiator}"
+    def measurement_tags = "job_id=${this.job_id},job_type=${this.job_type},job_initiator=${this.job_initiator}"
     def values = "value=${job_state},job_number=${this.job_number},jenkins_url=\"${this.jenkins_url}\""
     def data = "${this.measurement_name},${measurement_tags} ${values}"
     def post_url = "${this.influxURL}/write?db=${this.influxDb}"
