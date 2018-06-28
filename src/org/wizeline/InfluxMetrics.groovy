@@ -16,6 +16,7 @@ import java.net.URLConnection
 
 public class InfluxMetrics implements Serializable {
   public static STARTED = 0
+  public static START = 0
   public static PASSED = 1
   public static UNSTABLE = -1
   public static FAILED = 2
