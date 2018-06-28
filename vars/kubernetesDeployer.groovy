@@ -30,6 +30,7 @@
 import org.wizeline.SlackI
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
+import org.wizeline.InfluxMetrics
 
 def call(body) {
 
@@ -104,6 +105,19 @@ def call(body) {
   }
 
   slack_i.send("good", "kubernetesDeployer *START*")
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "kubernetes-deployer",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
+
   node (jenkinsNode){
     try{
       // Clean workspace before doing anything
@@ -183,6 +197,9 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
             slack_i.send("good", "kubernetesDeployer *SUCCESS*")
           }
       }
+
+      influxdb.processBuildResult(currentBuild)
+
     } catch (err) {
       println err
       currentBuild.result = 'FAILURE'
