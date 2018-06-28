@@ -63,12 +63,12 @@ public class InfluxMetrics implements Serializable {
 
   // @NonCPS
   private def sendPostRequest(urlString, requestBody) {
-      def response = this.steps.httpRequest
+      def response = this.steps.httpRequest(
         httpMode: "POST",
         contentType: "TEXT_PLAIN",
         customHeaders: [[name: 'Authorization', value: this.influxAPIAuth]],
         requestBody: requestBody,
-        url: urlString
+        url: urlString)
       return response
   }
 
