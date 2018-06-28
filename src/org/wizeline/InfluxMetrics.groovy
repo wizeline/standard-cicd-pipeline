@@ -75,10 +75,10 @@ public class InfluxMetrics implements Serializable {
 
   // @NonCPS
   public def sendInfluxPoint(job_state) {
-    measurement_tags = "job_id=${this.job_id},job_type=${this.job_type},job_initiator=${this.job_initiator}"
-    values = "value=${job_state},job_number=${this.job_number},jenkins_url=${this.jenkins_url}"
-    data = "${this.measurement_name},${measurement_tags} ${values}"
-    post_url = "${this.influxURL}/write?db=${this.influxDb}"
+    def measurement_tags = "job_id=${this.job_id},job_type=${this.job_type},job_initiator=${this.job_initiator}"
+    def values = "value=${job_state},job_number=${this.job_number},jenkins_url=${this.jenkins_url}"
+    def data = "${this.measurement_name},${measurement_tags} ${values}"
+    def post_url = "${this.influxURL}/write?db=${this.influxDb}"
 
     this.sendPostRequest(post_url, data)
   }
