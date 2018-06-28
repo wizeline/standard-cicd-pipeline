@@ -83,8 +83,6 @@ public class InfluxMetrics implements Serializable {
     def data = "${this.measurement_name},${measurement_tags} ${values}"
     def post_url = "${this.influxURL}/write?db=${this.influxDb}"
 
-    this.steps.echo(data)
-
     this.sendPostRequest(post_url, data)
   }
 
