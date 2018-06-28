@@ -47,6 +47,9 @@ public class InfluxMetrics implements Serializable {
     this.config = config
     this.build_user = build_user
 
+    this.influxAPIAuth = this.env.INFLUX_API_AUTH
+    this.influxURL = this.env.INFLUX_URL
+
     this.job_type = this.formatField(job_type)
     this.job_number = this.formatField(env.BUILD_NUMBER)
     this.job_id = this.formatField(env.JOB_NAME)
