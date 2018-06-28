@@ -88,11 +88,11 @@ public class InfluxMetrics implements Serializable {
 
   public def processBuildResult(currentBuild) {
     if (currentBuild.result == 'SUCCESS') {
-      this.sendInfluxPoint(influxdb.PASSED)
+      this.sendInfluxPoint(this.PASSED)
     } else if (currentBuild.result == 'UNSTABLE') {
-      this.sendInfluxPoint(influxdb.UNSTABLE)
+      this.sendInfluxPoint(this.UNSTABLE)
     } else {
-      this.sendInfluxPoint(influxdb.FAILED)
+      this.sendInfluxPoint(this.FAILED)
     }
   }
 
