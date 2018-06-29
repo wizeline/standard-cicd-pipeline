@@ -1,4 +1,5 @@
 package org.wizeline
+import groovy.json.JsonOutput
 
 public class BuildManifest implements Serializable {
   // Other
@@ -48,7 +49,7 @@ public class BuildManifest implements Serializable {
 
   public def generate(){
     def manifest = this.build_manifest()
-    // we need to convert this to a json string
+    // convert this to a json string
     return JsonOutput.toJson(manifest)
   }
 
