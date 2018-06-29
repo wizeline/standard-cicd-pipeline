@@ -26,7 +26,7 @@ public class BuildManifest implements Serializable {
 
     def values =  [
       "jenkins": [
-        "build_datetime": curr_date.format("yyMMdd.HHmm", TimeZone.getTimeZone('UTC')),
+        "build_datetime": curr_date.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ", TimeZone.getTimeZone('UTC')),
         "build_timestamp": this.steps.currentBuild.startTimeInMillis,
         "build_number": this.env.BUILD_NUMBER,
         "build_url": this.env.BUILD_URL,
