@@ -22,12 +22,12 @@ public class BuildManifest implements Serializable {
 
   @NonCPS
   private def build_manifest(){
-    // def curr_date = new Date()
+    def curr_date = new Date()
 
     def values =  [
       "jenkins": [
-        // "build_datetime": curr_date.format("yyMMdd.HHmm", TimeZone.getTimeZone('UTC'))
-        // "build_timestamp": this.steps.currentBuild.startTimeInMillis,
+        "build_datetime": curr_date.format("yyMMdd.HHmm", TimeZone.getTimeZone('UTC'))
+        "build_timestamp": this.steps.currentBuild.startTimeInMillis,
         "build_number": this.env.BUILD_NUMBER,
         "build_url": this.env.BUILD_URL,
         "job_name": this.env.JOB_NAME,
