@@ -48,7 +48,8 @@ public class BuildManifest implements Serializable {
 
   public def generate(){
     def manifest = this.build_manifest()
-    println(manifest)
+    // we need to convert this to a json string
+    return manifest
   }
 
 }

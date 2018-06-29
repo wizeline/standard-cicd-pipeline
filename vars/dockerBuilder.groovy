@@ -74,6 +74,7 @@ def call(body) {
 
   // BuildManifest
   def buildManifest
+  def buildManifestStr
 
   // InfluxDB
   def influxdb = new InfluxMetrics(
@@ -113,7 +114,8 @@ def call(body) {
           git_info,
           "docker-builder"
         )
-        buildManifest.generate()
+        buildManifestStr = buildManifest.generate()
+        echo "buildManifestStr: ${buildManifestStr}"
 
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
