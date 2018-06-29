@@ -24,7 +24,7 @@ public class BuildManifest implements Serializable {
 
     return {
       "jenkins": {
-        "build_datetime": now.format("yyMMdd.HHmm", TimeZone.getTimeZone('UTC'))
+        "build_datetime": curr_date.format("yyMMdd.HHmm", TimeZone.getTimeZone('UTC'))
         "build_timestamp": currentBuild.startTimeInMillis,
         "build_number": this.env.BUILD_NUMBER,
         "build_url": this.env.BUILD_URL,
@@ -43,6 +43,7 @@ public class BuildManifest implements Serializable {
     }
   }
 
+  @NonCPS
   public def generate(){
     println(this.build_manifest())
   }
