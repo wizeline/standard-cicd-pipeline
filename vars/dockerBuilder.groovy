@@ -2,6 +2,7 @@
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
 import org.wizeline.InfluxMetrics
+import org.wizeline.BuildManifest
 
 def call(body) {
 
@@ -71,6 +72,10 @@ def call(body) {
   def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
   println "disableSubmodules: ${jobDisableSubmodules}"
 
+  // BuildManifest
+  def buildManifest
+  def buildManifestStr
+
   // InfluxDB
   def influxdb = new InfluxMetrics(
     this,
@@ -99,6 +104,19 @@ def call(body) {
         }
         gitBranch = git_info["git-branch"]
         gitSha = git_info["git-commit-sha"]
+
+        buildManifest = new BuildManifest(
+          this,
+          params,
+          env,
+          config,
+          getUser(),
+          git_info,
+          "docker-builder"
+        )
+        buildManifestStr = buildManifest.generate()
+        println "buildManifest: ${buildManifestStr}"
+        writeFile file: "build-manifest.json", text: buildManifestStr
 
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
