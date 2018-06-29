@@ -46,7 +46,7 @@ public class BuildManifest implements Serializable {
 
   // @NonCPS
   public def generate(){
-    def manifest = this.build_manifest()
+    // def manifest = this.build_manifest()
     // println()
   }
 
