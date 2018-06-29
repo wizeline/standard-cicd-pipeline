@@ -19,7 +19,7 @@ public class BuildManifest implements Serializable {
     this.job_type = job_type
   }
 
-  @NonCPS
+  // @NonCPS
   private def build_manifest(){
     // def curr_date = new Date()
 
@@ -44,7 +44,7 @@ public class BuildManifest implements Serializable {
     }
   }
 
-  @NonCPS
+  // @NonCPS
   public def generate(){
     def manifest = this.build_manifest()
     // println()
