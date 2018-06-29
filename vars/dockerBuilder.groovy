@@ -115,8 +115,7 @@ def call(body) {
           "docker-builder"
         )
         buildManifestStr = buildManifest.generate()
-        println "buildManifest:"
-        println buildManifestStr
+        println "buildManifest: ${buildManifestStr}"
         writeFile file: "build-manifest.json", text: buildManifestStr
 
         echo "Branch: ${gitBranch}"

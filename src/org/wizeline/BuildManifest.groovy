@@ -39,7 +39,7 @@ public class BuildManifest implements Serializable {
         "git_branch": this.git_info["git-branch"],
         "git_sha": this.git_info["git-commit-sha"],
         "git_author": this.git_info["git-author"],
-        "git_sha_arg": this.git_info["git-sha-arg"],
+        "git_sha_param": this.params.BRANCH,
         "git_repo_url": this.git_info["git-repo-url"],
       ]
     ]
