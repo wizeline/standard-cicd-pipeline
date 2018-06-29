@@ -20,7 +20,7 @@ public class BuildManifest implements Serializable {
   }
 
   @NonCPS
-  def private build_manifest(){
+  private def build_manifest(){
     // def curr_date = new Date()
 
     return {
@@ -32,14 +32,14 @@ public class BuildManifest implements Serializable {
         "job_name": this.env.JOB_NAME,
         "build_tag": this.env.BUILD_TAG,
         "build_user": this.build_user,
-        "job_type": this.job_type
+        "job_type": this.job_type,
       },
       "git": {
         "git_branch": this.git_info["git-branch"],
         "git_sha": this.git_info["git-commit-sha"],
         "git_author": this.git_info["git-author"],
         "git_sha_arg": this.git_info["git-sha-arg"],
-        "git_repo_url": this.git_info["git-repo-url"]
+        "git_repo_url": this.git_info["git-repo-url"],
       }
     }
   }
