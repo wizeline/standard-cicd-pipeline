@@ -33,7 +33,7 @@ public class BuildManifest implements Serializable {
         "build_tag": this.env.BUILD_TAG,
         "build_user": this.build_user,
         "job_type": this.job_type
-      }
+      },
       "git": {
         "git_branch": this.git_info["git-branch"],
         "git_sha": this.git_info["git-commit-sha"],
