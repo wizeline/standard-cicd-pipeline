@@ -8,6 +8,7 @@ public class BuildManifest implements Serializable {
   private config
   private build_user
   private git_info
+  private job_type
 
   BuildManifest(steps, params, env, config, build_user, git_info, job_type) {
     this.steps = steps
@@ -23,7 +24,7 @@ public class BuildManifest implements Serializable {
   private def build_manifest(){
     // def curr_date = new Date()
 
-    return {
+    def values =  {
       "jenkins": {
         // "build_datetime": curr_date.format("yyMMdd.HHmm", TimeZone.getTimeZone('UTC'))
         // "build_timestamp": this.steps.currentBuild.startTimeInMillis,
@@ -42,12 +43,15 @@ public class BuildManifest implements Serializable {
         "git_repo_url": this.git_info["git-repo-url"],
       }
     }
+
+    return values
   }
 
   // @NonCPS
   public def generate(){
     // def manifest = this.build_manifest()
     // println()
+    return
   }
 
 }
