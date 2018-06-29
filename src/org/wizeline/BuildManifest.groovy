@@ -19,13 +19,14 @@ public class BuildManifest implements Serializable {
     this.job_type = job_type
   }
 
+  @NonCPS
   def private build_manifest(){
     // def curr_date = new Date()
 
     return {
       "jenkins": {
         // "build_datetime": curr_date.format("yyMMdd.HHmm", TimeZone.getTimeZone('UTC'))
-        "build_timestamp": this.steps.currentBuild.startTimeInMillis,
+        // "build_timestamp": this.steps.currentBuild.startTimeInMillis,
         "build_number": this.env.BUILD_NUMBER,
         "build_url": this.env.BUILD_URL,
         "job_name": this.env.JOB_NAME,
