@@ -128,12 +128,12 @@ def call(body) {
         }
       }
 
-     stage('DockerBuildRetagPush'){
+      stage('DockerBuildRetagPush'){
 
-         withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                         credentialsId: dockerRegistryCredentialsId,
-                         passwordVariable: 'DOCKER_REGISTRY_PASSWORD',
-                         usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
+          withCredentials([[$class: 'UsernamePasswordMultiBinding',
+                          credentialsId: dockerRegistryCredentialsId,
+                          passwordVariable: 'DOCKER_REGISTRY_PASSWORD',
+                          usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
 
           def workspace = pwd()
           def job_as_service_image = "${DefaultValues.defaultJobsAsAServiceImage}:${DefaultValues.defaultJobsAsAServiceImageTag}"
@@ -204,6 +204,7 @@ $build_args
                         color:'danger',
                         message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
             }
+            influxdb.processBuildResult(currentBuild)
             error("FAILURE - Build container returned non 0 exit code")
             return 1
           }
@@ -215,10 +216,11 @@ $build_args
                       color:'good',
                       message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
           }
-         }
-       }
+          } // /withCredentials
+      } // /stage('DockerBuildRetagPush')
 
-     influxdb.processBuildResult(currentBuild)
+      influxdb.processBuildResult(currentBuild)
+      return 0
 
     } catch (err) {
       println err
@@ -227,6 +229,7 @@ $build_args
                    color:'danger',
                    message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
       }
+      influxdb.processBuildResult(currentBuild)
       throw err
     }
   } // /node
