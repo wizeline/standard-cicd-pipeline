@@ -138,6 +138,7 @@ def call(body) {
       }
 
       influxdb.processBuildResult(currentBuild)
+      slack_i.send("good", "testExecutor *SUCCESS*")
 
       return return_hash
     } // /node
