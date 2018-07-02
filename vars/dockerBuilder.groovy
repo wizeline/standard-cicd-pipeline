@@ -1,6 +1,8 @@
 //#!Groovy
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
+import org.wizeline.InfluxMetrics
+import org.wizeline.BuildManifest
 
 def call(body) {
 
@@ -70,7 +72,22 @@ def call(body) {
   def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
   println "disableSubmodules: ${jobDisableSubmodules}"
 
+  // BuildManifest
+  def buildManifest
+  def buildManifestStr
 
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "docker-builder",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
 
   node (jenkinsNode){
     try{
@@ -87,6 +104,19 @@ def call(body) {
         }
         gitBranch = git_info["git-branch"]
         gitSha = git_info["git-commit-sha"]
+
+        buildManifest = new BuildManifest(
+          this,
+          params,
+          env,
+          config,
+          getUser(),
+          git_info,
+          "docker-builder"
+        )
+        buildManifestStr = buildManifest.generate()
+        println "buildManifest: ${buildManifestStr}"
+        writeFile file: "build-manifest.json", text: buildManifestStr
 
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
@@ -186,18 +216,18 @@ $build_args
                       message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
           }
          }
-     }
-     } catch (err) {
-       println err
-       if (config.slackChannelName && !muteSlack){
-         slackSend channel:"#${slackChannelName}",
+       }
+
+     influxdb.processBuildResult(currentBuild)
+
+    } catch (err) {
+      println err
+      if (config.slackChannelName && !muteSlack){
+        slackSend channel:"#${slackChannelName}",
                    color:'danger',
                    message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
-       }
-       throw err
-     }
-
-   }
-
-
+      }
+      throw err
+    }
+  } // /node
 }

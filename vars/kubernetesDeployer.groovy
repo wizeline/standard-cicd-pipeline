@@ -1,35 +1,8 @@
 //#!Groovy
-
-// # Calling script example
-// // def jobK8sConfigCredentialsId = params.K8S_CREDENTIALS_ID
-// // def jobK8sContext = params.K8S_CONTEXT
-// // def jobK8sNamespace = params.K8S_NAMESPACE
-// // def jobK8sDeployment = params.K8S_DEPLOYMENT
-// // def jobK8sEnv = params.K8S_ENV
-// // def jobDockerRegistry = params.DOCKER_REGISTRY
-// // def jobDockerImageName = params.DOCKER_IMAGE_NAME
-// // def jobDockerImageTag = params.DOCKER_COMMIT_TAG
-// // def jobDockerDaemon = params.DOCKER_DAEMON_URL
-// //
-// // kubernetesDeployer {
-// //   k8sConfigCredentialsId = jobK8sConfigCredentialsId
-// //   k8sContext = jobK8sContext
-// //   k8sNamespace = jobK8sNamespace
-// //   k8sDeploymentName = jobK8sDeployment
-// //   k8sEnvTag = jobK8sEnv
-// //
-// //   dockerRegistry = jobDockerRegistry
-// //   dockerImageName = jobDockerImageName
-// //   dockerImageTag = jobDockerImageTag
-// //
-// //   dockerDaemonHost = "internal-docker.wize.mx"
-// //   dockerRegistryCredentialsId = "d656f8b1-dcf6-4737-83c1-c9199fb02463"
-// // }
-
-
 import org.wizeline.SlackI
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
+import org.wizeline.InfluxMetrics
 
 def call(body) {
 
@@ -104,6 +77,19 @@ def call(body) {
   }
 
   slack_i.send("good", "kubernetesDeployer *START*")
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "kubernetes-deployer",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
+
   node (jenkinsNode){
     try{
       // Clean workspace before doing anything
@@ -183,6 +169,9 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
             slack_i.send("good", "kubernetesDeployer *SUCCESS*")
           }
       }
+
+      influxdb.processBuildResult(currentBuild)
+
     } catch (err) {
       println err
       currentBuild.result = 'FAILURE'
