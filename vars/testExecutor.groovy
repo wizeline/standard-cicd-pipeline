@@ -2,6 +2,7 @@
 import org.wizeline.SlackI
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
+import org.wizeline.InfluxMetrics
 
 def is_force_build(){
   print "FORCE_BUILD: ${params.FORCE_BUILD}"
@@ -45,72 +46,106 @@ def call(body) {
   // Slack
   def jobSlackChannelName = params.SLACK_CHANNEL_NAME
 
+  slack_i = new SlackI(
+    this,
+    params,
+    env,
+    config,
+    getUser()
+  )
+  slack_i.useTestsSufix()
+
   // Jenkins
   def jobJenkinsNode      = config.jobJenkinsNode ?: params.JENKINS_NODE
 
-  node {
-    stage ('Checkout') {
-      git_info = gitCheckout {
-        branch = jobGitSha
-        credentialsId = jobGitCredentialsId
-        repoUrl = jobGitRepoUrl
-        disableSubmodules = jobDisableSubmodules
+  slack_i.send("good", "testExecutor *START*")
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "test-flow",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
+
+  try{
+    node {
+
+      stage ('Checkout') {
+        git_info = gitCheckout {
+          branch = jobGitSha
+          credentialsId = jobGitCredentialsId
+          repoUrl = jobGitRepoUrl
+          disableSubmodules = jobDisableSubmodules
+        }
+        jobGitBranch = git_info["git-branch"]
+        jobGitShaCommit = git_info["git-commit-sha"]
+
+        return_hash["git-branch"] = jobGitBranch
+        return_hash["git-sha"] = jobGitShaCommit
+
+        echo "Branch: ${jobGitBranch}"
+        echo "SHA: ${jobGitShaCommit}"
       }
-      jobGitBranch = git_info["git-branch"]
-      jobGitShaCommit = git_info["git-commit-sha"]
 
-      return_hash["git-branch"] = jobGitBranch
-      return_hash["git-sha"] = jobGitShaCommit
+      stage("tests-execution:"){
+        def branchTag = jobGitSha.replace("/", "_").replace("origin", "")
+        def noTagCheck = is_force_build() ? "true" : "false"
 
-      echo "Branch: ${jobGitBranch}"
-      echo "SHA: ${jobGitShaCommit}"
-    }
+        dockerBuilder {
+          gitRepoUrl        = jobGitRepoUrl
+          gitCredentialsId  = jobGitCredentialsId
+          gitSha            = jobGitShaCommit
+          disableSubmodules = jobDisableSubmodules
+
+          dockerImageName  = jobDockerImageName
+          dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          dockerRegistry   = jobDockerRegistry
+          slackChannelName = jobSlackChannelName
+
+          dockerEnvTag     = branchTag
+          dockerDockerfile = jobDockerDockerfile
+          dockerNoTagCheck = noTagCheck
+          dockerSourceRelativePath = jobDockerSourceRelativePath
+
+          // dockerDaemonDnsDiscovery vs dockerDaemonHost
+          // dockerDaemonDnsDiscovery: will select a dockerd from a elb
+          // dockerDaemonHost: uses specific dockerd
+          dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
+          dockerDaemonHost = jobDockerDaemonHost
+          dockerDaemonPort = jobDockerDaemonPort
+          jenkinsNode      = jobJenkinsNode
+        }
+
+        dockerRunner {
+          dockerImageName  = jobDockerImageName
+          dockerImageTag   = branchTag
+          dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
+          dockerRegistry   = jobDockerRegistry
+          slackChannelName = jobSlackChannelName
+
+          dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
+          dockerDaemonHost = jobDockerDaemonHost
+          dockerDaemonPort = jobDockerDaemonPort
+          jenkinsNode      = jobJenkinsNode
+        }
+
+        return_hash["tests-execution"] = "success"
+      }
+
+      influxdb.processBuildResult(currentBuild)
+
+      return return_hash
+    } // /node
+  } catch (err) {
+    println err
+    currentBuild.result = 'FAILURE'
+    slack_i.send("danger", "kubernetesDeployer *FAILED*")
+    influxdb.processBuildResult(currentBuild)
+    throw err
   }
-
-  stage("tests-execution:"){
-    def branchTag = jobGitSha.replace("/", "_").replace("origin", "")
-    def noTagCheck = is_force_build() ? "true" : "false"
-
-    dockerBuilder {
-      gitRepoUrl        = jobGitRepoUrl
-      gitCredentialsId  = jobGitCredentialsId
-      gitSha            = jobGitShaCommit
-      disableSubmodules = jobDisableSubmodules
-
-      dockerImageName  = jobDockerImageName
-      dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-      dockerRegistry   = jobDockerRegistry
-      slackChannelName = jobSlackChannelName
-
-      dockerEnvTag     = branchTag
-      dockerDockerfile = jobDockerDockerfile
-      dockerNoTagCheck = noTagCheck
-      dockerSourceRelativePath = jobDockerSourceRelativePath
-
-      // dockerDaemonDnsDiscovery vs dockerDaemonHost
-      // dockerDaemonDnsDiscovery: will select a dockerd from a elb
-      // dockerDaemonHost: uses specific dockerd
-      dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
-      dockerDaemonHost = jobDockerDaemonHost
-      dockerDaemonPort = jobDockerDaemonPort
-      jenkinsNode      = jobJenkinsNode
-    }
-
-    dockerRunner {
-      dockerImageName  = jobDockerImageName
-      dockerImageTag   = branchTag
-      dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
-      dockerRegistry   = jobDockerRegistry
-      slackChannelName = jobSlackChannelName
-
-      dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
-      dockerDaemonHost = jobDockerDaemonHost
-      dockerDaemonPort = jobDockerDaemonPort
-      jenkinsNode      = jobJenkinsNode
-    }
-
-    return_hash["tests-execution"] = "success"
-  }
-
-  return return_hash
 }
