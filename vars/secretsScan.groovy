@@ -54,7 +54,7 @@ def call(body) {
     env,
     config,
     getUser(),
-    "kubernetes-deployer",
+    "secrets-scan",
     env.INFLUX_URL,
     env.INFLUX_API_AUTH
   )

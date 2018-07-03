@@ -80,6 +80,8 @@ def call(body) {
   )
   influxdb.sendInfluxPoint(influxdb.START)
 
+  try{
+
   node {
     stage ('Checkout') {
       //git branch: jobGitShaNoOrigin, url: jobGitRepoUrl, credentialsId: jobGitCredentialsId
@@ -245,5 +247,13 @@ def call(body) {
   influxdb.processBuildResult(currentBuild)
 
   return return_hash
+
+  } catch (err) {
+    println err
+    echo "FAILURE"
+    currentBuild.result = 'FAILURE'
+    influxdb.processBuildResult(currentBuild)
+    throw err
+  }
 
 }

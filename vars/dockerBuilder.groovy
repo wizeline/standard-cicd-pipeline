@@ -2,6 +2,7 @@
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
 import org.wizeline.InfluxMetrics
+import org.wizeline.BuildManifest
 
 def call(body) {
 
@@ -71,6 +72,10 @@ def call(body) {
   def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
   println "disableSubmodules: ${jobDisableSubmodules}"
 
+  // BuildManifest
+  def buildManifest
+  def buildManifestStr
+
   // InfluxDB
   def influxdb = new InfluxMetrics(
     this,
@@ -100,6 +105,19 @@ def call(body) {
         gitBranch = git_info["git-branch"]
         gitSha = git_info["git-commit-sha"]
 
+        buildManifest = new BuildManifest(
+          this,
+          params,
+          env,
+          config,
+          getUser(),
+          git_info,
+          "docker-builder"
+        )
+        buildManifestStr = buildManifest.generate()
+        println "buildManifest: ${buildManifestStr}"
+        writeFile file: "build-manifest.json", text: buildManifestStr
+
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
 
@@ -110,12 +128,12 @@ def call(body) {
         }
       }
 
-     stage('DockerBuildRetagPush'){
+      stage('DockerBuildRetagPush'){
 
-         withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                         credentialsId: dockerRegistryCredentialsId,
-                         passwordVariable: 'DOCKER_REGISTRY_PASSWORD',
-                         usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
+          withCredentials([[$class: 'UsernamePasswordMultiBinding',
+                          credentialsId: dockerRegistryCredentialsId,
+                          passwordVariable: 'DOCKER_REGISTRY_PASSWORD',
+                          usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
 
           def workspace = pwd()
           def job_as_service_image = "${DefaultValues.defaultJobsAsAServiceImage}:${DefaultValues.defaultJobsAsAServiceImageTag}"
@@ -181,11 +199,7 @@ $build_args
           if (exit_code != 0 && exit_code != TAG_ALREADY_EXIST_CODE){
             echo "FAILURE"
             currentBuild.result = 'FAILURE'
-            if (config.slackChannelName && !muteSlack){
-              slackSend channel:"#${slackChannelName}",
-                        color:'danger',
-                        message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
-            }
+            // error will trigger catch and slack and influx will be sent.
             error("FAILURE - Build container returned non 0 exit code")
             return 1
           }
@@ -197,18 +211,21 @@ $build_args
                       color:'good',
                       message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
           }
-         }
-       }
+          } // /withCredentials
+      } // /stage('DockerBuildRetagPush')
 
-     influxdb.processBuildResult(currentBuild)
+      influxdb.processBuildResult(currentBuild)
+      return 0
 
     } catch (err) {
       println err
+      currentBuild.result = 'FAILURE'
       if (config.slackChannelName && !muteSlack){
         slackSend channel:"#${slackChannelName}",
                    color:'danger',
                    message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
       }
+      influxdb.processBuildResult(currentBuild)
       throw err
     }
   } // /node

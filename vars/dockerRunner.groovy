@@ -101,7 +101,7 @@ def call(body) {
 
           // Call the runner container
           exit_code = sh script: """
-          set +e
+          set -e
 
           $docker_bin pull $dockerRegistry/$dockerImageName:$dockerImageTag || true
           docker_id=\$($docker_bin create --env-file docker_env $dockerRegistry/$dockerImageName:$dockerImageTag)
@@ -122,11 +122,7 @@ def call(body) {
           if (exit_code != 0 && exit_code != 3){
             echo "FAILURE"
             currentBuild.result = 'FAILURE'
-            if (config.slackChannelName && !muteSlack){
-              slackSend channel:"#${slackChannelName}",
-                        color:'danger',
-                        message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
-            }
+            // error will trigger catch and slack and influx will be sent.
             error("FAILURE - Run container returned non 0 exit code")
             return 1
           }
@@ -139,17 +135,20 @@ def call(body) {
                       message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
           }
         }
-      }
+      } // /stage('RunContainer')
 
       influxdb.processBuildResult(currentBuild)
-      
+      return 0
+
     } catch (err) {
       println err
+      currentBuild.result = 'FAILURE'
       if (config.slackChannelName && !muteSlack){
         slackSend channel:"#${slackChannelName}",
                   color:'danger',
                   message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName},  dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
       }
+      influxdb.processBuildResult(currentBuild)
       throw err
     }
   }

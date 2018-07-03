@@ -158,8 +158,7 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
 
             if (exit_code != 0){
               echo "FAILURE"
-              currentBuild.result = 'FAILURE'
-              slack_i.send("danger", "kubernetesDeployer *FAILURE*")
+              // error will trigger catch and slack and influx will be sent.
               error("FAILURE - Build container returned non 0 exit code")
               return 1
             }
