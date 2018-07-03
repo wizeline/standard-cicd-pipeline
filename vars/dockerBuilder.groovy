@@ -199,12 +199,7 @@ $build_args
           if (exit_code != 0 && exit_code != TAG_ALREADY_EXIST_CODE){
             echo "FAILURE"
             currentBuild.result = 'FAILURE'
-            if (config.slackChannelName && !muteSlack){
-              slackSend channel:"#${slackChannelName}",
-                        color:'danger',
-                        message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
-            }
-            influxdb.processBuildResult(currentBuild)
+            // error will trigger catch and slack and influx will be sent.
             error("FAILURE - Build container returned non 0 exit code")
             return 1
           }
@@ -224,6 +219,7 @@ $build_args
 
     } catch (err) {
       println err
+      currentBuild.result = 'FAILURE'
       if (config.slackChannelName && !muteSlack){
         slackSend channel:"#${slackChannelName}",
                    color:'danger',
