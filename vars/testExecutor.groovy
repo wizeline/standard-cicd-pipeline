@@ -145,7 +145,7 @@ def call(body) {
   } catch (err) {
     println err
     currentBuild.result = 'FAILURE'
-    slack_i.send("danger", "kubernetesDeployer *FAILED*")
+    slack_i.send("danger", "testExecutor *FAILED*")
     influxdb.processBuildResult(currentBuild)
     throw err
   }
