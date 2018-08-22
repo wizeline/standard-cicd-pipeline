@@ -67,6 +67,7 @@ public class InfluxMetrics implements Serializable {
 
   // @NonCPS
   private def sendPostRequest(urlString, requestBody) {
+    try {
       def response = this.steps.httpRequest(
         httpMode: "POST",
         contentType: "TEXT_PLAIN",
@@ -74,6 +75,10 @@ public class InfluxMetrics implements Serializable {
         requestBody: requestBody,
         url: urlString)
       return response
+    } catch(Exception err) {
+      println("Error sending influx data-point" + err.getMessage());
+    }
+    return null
   }
 
   // @NonCPS
