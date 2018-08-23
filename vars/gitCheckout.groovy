@@ -23,7 +23,7 @@ def call(body) {
                           parentCredentials: true,
                           recursiveSubmodules: true,
                           reference: '',
-                          trackingSubmodules: true]],
+                          trackingSubmodules: false]],
             submoduleCfg: [],
             userRemoteConfigs: [
               [
