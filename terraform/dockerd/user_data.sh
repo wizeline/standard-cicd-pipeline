@@ -110,39 +110,38 @@ EOF
 
 cd /opt/portainer/ && /opt/bin/docker-compose up -d
 
-# -- Consul Node --
+ -- Consul Node --
 
-# # Ips
-# PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-# PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-# PRIVATE_IP_HIPHENS=$${PRIVATE_IP//./-}
-#
-# # Setup Consul
-# mkdir -p /tmp/consul
-# mkdir -p /etc/consul
-# tee /etc/consul/server.json > /dev/null <<EOF
-# {
-#   "bind_addr": "$PRIVATE_IP",
-#   "acl_datacenter":"us-east-2",
-#   "datacenter":"us-east-2",
-#   "acl_default_policy":"deny",
-#   "acl_down_policy":"deny",
-#   "acl_master_token":"${acl_master_token}",
-#   "encrypt": "${consul_encrypt}",
-#   "disable_remote_exec": true,
-#   "disable_update_check": true,
-#   "leave_on_terminate": true
-# }
-# EOF
+ # Ips
+ PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
+ PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+ PRIVATE_IP_HIPHENS=$${PRIVATE_IP//./-}
 
-# # Init a client
-# export CONSUL_SERVICE_HOST=internal-consul-elb.wize.mx
-# docker run --restart always --network=host -i -v /tmp/consul:/consul/data -v /etc/consul:/etc/consul  -d consul:1.0.1 agent \
-#     -data-dir=/tmp/consul \
-#     -retry-join=$CONSUL_SERVICE_HOST \
-#     -config-file=/etc/consul/server.json \
-#     -node=dockerd-$PRIVATE_IP_HIPHENS
-#
+ # Setup Consul
+ mkdir -p /tmp/consul
+ mkdir -p /etc/consul
+ tee /etc/consul/server.json > /dev/null <<EOF
+ {
+   "bind_addr": "$PRIVATE_IP",
+   "acl_datacenter":"$AWS_REGION",
+   "datacenter":"AWS_REGION",
+   "acl_default_policy":"deny",
+   "acl_down_policy":"deny",
+   "acl_master_token":"${acl_master_token}",
+   "encrypt": "${consul_encrypt}",
+   "disable_remote_exec": true,
+   "disable_update_check": true,
+   "leave_on_terminate": true
+ }
+EOF
+ # Init a client
+ export CONSUL_SERVICE_HOST=internal-consul-elb.wize.mx
+ docker run --restart always --network=host -i -v /tmp/consul:/consul/data -v /etc/consul:/etc/consul  -d consul:1.0.1 agent \
+     -data-dir=/tmp/consul \
+     -retry-join=$CONSUL_SERVICE_HOST \
+     -config-file=/etc/consul/server.json \
+     -node=dockerd-$PRIVATE_IP_HIPHENS
+
 # # Init a server
 # docker run  -ti --net=host -v /etc/consul:/etc/consul consul:1.0.1 agent \
 #    -server \
