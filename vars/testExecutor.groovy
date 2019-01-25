@@ -72,6 +72,8 @@ def call(body) {
   )
   influxdb.sendInfluxPoint(influxdb.START)
 
+  def exit_code
+
   try{
     node {
 
@@ -121,7 +123,7 @@ def call(body) {
           jenkinsNode      = jobJenkinsNode
         }
 
-        dockerRunner {
+        exit_code = dockerRunner {
           dockerImageName  = jobDockerImageName
           dockerImageTag   = branchTag
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
@@ -137,8 +139,15 @@ def call(body) {
         return_hash["tests-execution"] = "success"
       }
 
+      if (exit_code == 3){
+        echo "UNSTABLE"
+        currentBuild.result = 'UNSTABLE'
+        slack_i.send("warning", "testExecutor *UNSTABLE*")
+      } else {
+        slack_i.send("good", "testExecutor *SUCCESS*")
+      }
+
       influxdb.processBuildResult(currentBuild)
-      slack_i.send("good", "testExecutor *SUCCESS*")
 
       return return_hash
     } // /node
