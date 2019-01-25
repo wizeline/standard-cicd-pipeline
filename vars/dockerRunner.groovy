@@ -62,6 +62,8 @@ def call(body) {
   )
   influxdb.sendInfluxPoint(influxdb.START)
 
+  def exit_code
+
   node (jenkinsNode){
     try {
 
@@ -138,7 +140,7 @@ def call(body) {
       } // /stage('RunContainer')
 
       influxdb.processBuildResult(currentBuild)
-      return 0
+      return exit_code
 
     } catch (err) {
       println err
