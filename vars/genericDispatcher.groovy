@@ -60,12 +60,25 @@ def call(body) {
 
   // Slack
   def jobSlackChannelName  = params.SLACK_CHANNEL_NAME
+  slack_i = new SlackI(
+    this,
+    params,
+    env,
+    config,
+    getUser()
+  )
+  def sendSuccess = false
+  def sendStart = false
 
   def jobJenkinsNode       = config.jobJenkinsNode ?: params.JENKINS_NODE
 
   def disableLint = config.disableLint ?: 'false'
   def disableUnitTests = config.disableUnitTests ?: 'false'
   def disableBuildImage = config.disableBuildImage ?: 'false'
+
+  if (sendStart){
+    slack_i.send("good", "genericDispatcher *START*")
+  }
 
   // InfluxDB
   def influxdb = new InfluxMetrics(
@@ -245,6 +258,9 @@ def call(body) {
   }
 
   influxdb.processBuildResult(currentBuild)
+  if (sendSuccess){
+    slack_i.send("good", "genericDispatcher *SUCCESS*")
+  }
 
   return return_hash
 
@@ -252,6 +268,7 @@ def call(body) {
     println err
     echo "FAILURE"
     currentBuild.result = 'FAILURE'
+    slack_i.send("danger", "genericDispatcher *FAILED*")
     influxdb.processBuildResult(currentBuild)
     throw err
   }

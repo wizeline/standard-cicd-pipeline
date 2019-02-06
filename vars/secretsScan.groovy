@@ -38,6 +38,7 @@ def call(body) {
 
   def commits_MaxDepth = params.COMMITS_MAX_DEPTH ?: '5'
 
+  // Slack
   slack_i = new SlackI(
     this,
     params,
@@ -45,8 +46,13 @@ def call(body) {
     config,
     getUser()
   )
+  def sendSuccess = false
+  def sendStart = false
 
-  slack_i.send('good', "*START* secret-scan (secretsScan)")
+  if (sendStart){
+    slack_i.send('good', "*START* secret-scan (secretsScan)")
+  }
+
   // InfluxDB
   def influxdb = new InfluxMetrics(
     this,
@@ -84,7 +90,9 @@ def call(body) {
   }
 
   if (exit_code == 0) {
-    slack_i.send('good', "*SUCCESS* No secrets found (secretsScan)")
+    if (sendSuccess){
+      slack_i.send('good', "*SUCCESS* No secrets found (secretsScan)")
+    }
     echo "SUCCESS"
     currentBuild.result = 'SUCCESS'
   } else {

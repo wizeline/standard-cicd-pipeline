@@ -34,6 +34,8 @@ def call(body) {
   def slackToken       = config.slackToken
   def muteSlack        = config.muteSlack ?: DefaultValues.defaultMuteSlack
   muteSlack = (muteSlack == 'true')
+  def sendSuccess = false
+  def sendStart = false
 
   // For service discovery only
   def dockerDaemonHost = config.dockerDaemonHost
@@ -61,6 +63,8 @@ def call(body) {
     env.INFLUX_API_AUTH
   )
   influxdb.sendInfluxPoint(influxdb.START)
+
+  def exit_code
 
   node (jenkinsNode){
     try {
@@ -129,7 +133,7 @@ def call(body) {
 
           echo "SUCCESS"
           currentBuild.result = 'SUCCESS'
-          if (config.slackChannelName && !muteSlack){
+          if (config.slackChannelName && sendSuccess && !muteSlack){
             slackSend channel:"#${slackChannelName}",
                       color:'good',
                       message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
@@ -138,7 +142,7 @@ def call(body) {
       } // /stage('RunContainer')
 
       influxdb.processBuildResult(currentBuild)
-      return 0
+      return exit_code
 
     } catch (err) {
       println err

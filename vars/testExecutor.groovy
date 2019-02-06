@@ -45,7 +45,6 @@ def call(body) {
 
   // Slack
   def jobSlackChannelName = params.SLACK_CHANNEL_NAME
-
   slack_i = new SlackI(
     this,
     params,
@@ -54,11 +53,16 @@ def call(body) {
     getUser()
   )
   slack_i.useTestsSufix()
+  def sendSuccess = false
+  def sendStart = false
 
   // Jenkins
   def jobJenkinsNode      = config.jobJenkinsNode ?: params.JENKINS_NODE
 
-  slack_i.send("good", "testExecutor *START*")
+  if (sendStart){
+    slack_i.send("good", "testExecutor *START*")
+  }
+
   // InfluxDB
   def influxdb = new InfluxMetrics(
     this,
@@ -71,6 +75,8 @@ def call(body) {
     env.INFLUX_API_AUTH
   )
   influxdb.sendInfluxPoint(influxdb.START)
+
+  def exit_code
 
   try{
     node {
@@ -121,7 +127,7 @@ def call(body) {
           jenkinsNode      = jobJenkinsNode
         }
 
-        dockerRunner {
+        exit_code = dockerRunner {
           dockerImageName  = jobDockerImageName
           dockerImageTag   = branchTag
           dockerRegistryCredentialsId = jobDockerRegistryCredentialsId
@@ -137,8 +143,17 @@ def call(body) {
         return_hash["tests-execution"] = "success"
       }
 
+      if (exit_code == 3){
+        echo "UNSTABLE"
+        currentBuild.result = 'UNSTABLE'
+        slack_i.send("warning", "testExecutor *UNSTABLE*")
+      } else {
+        if (sendSuccess){
+          slack_i.send("good", "testExecutor *SUCCESS*")
+        }
+      }
+
       influxdb.processBuildResult(currentBuild)
-      slack_i.send("good", "testExecutor *SUCCESS*")
 
       return return_hash
     } // /node
