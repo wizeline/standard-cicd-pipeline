@@ -43,6 +43,8 @@ def call(body) {
   def slackToken       = config.slackToken
   def muteSlack        = config.muteSlack ?: DefaultValues.defaultMuteSlack
   muteSlack = (muteSlack == 'true')
+  def sendSuccess = false
+  def sendStart = false
 
   // Git Info
   def gitRepoUrl       = config.gitRepoUrl
@@ -121,7 +123,7 @@ def call(body) {
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
 
-        if (config.slackChannelName && !muteSlack){
+        if (config.slackChannelName && sendStart && !muteSlack){
           slackSend channel:"#${slackChannelName}",
                     color:'good',
                     message:"*START* Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER}\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* :${getUser()}"
@@ -206,7 +208,7 @@ $build_args
 
           echo "SUCCESS"
           currentBuild.result = 'SUCCESS'
-          if (config.slackChannelName && !muteSlack){
+          if (config.slackChannelName && sendSuccess && !muteSlack){
             slackSend channel:"#${slackChannelName}",
                       color:'good',
                       message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
