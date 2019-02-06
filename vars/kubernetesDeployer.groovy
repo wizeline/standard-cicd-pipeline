@@ -26,6 +26,8 @@ def call(body) {
     getUser()
   )
   slack_i.useK8sSufix()
+  def sendSuccess = false
+  def sendStart = false
 
   def k8sNamespace      = params.K8S_NAMESPACE ?: DefaultValues.defaultK8sNamespace
   def k8sContext        = params.K8S_CONTEXT
@@ -76,7 +78,10 @@ def call(body) {
     error 'You must provide a k8sEnvTag (K8S_ENV_TAG)'
   }
 
-  slack_i.send("good", "kubernetesDeployer *START*")
+  if (sendStart){
+    slack_i.send("good", "kubernetesDeployer *START*")
+  }
+
   // InfluxDB
   def influxdb = new InfluxMetrics(
     this,
@@ -165,7 +170,9 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
 
             echo "SUCCESS"
             currentBuild.result = 'SUCCESS'
-            slack_i.send("good", "kubernetesDeployer *SUCCESS*")
+            if (sendSuccess){
+              slack_i.send("good", "kubernetesDeployer *SUCCESS*")
+            }
           }
       }
 
