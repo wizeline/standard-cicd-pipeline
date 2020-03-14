@@ -54,17 +54,17 @@ def call(body) {
   }
 
   // InfluxDB
-  def influxdb = new InfluxMetrics(
-    this,
-    params,
-    env,
-    config,
-    getUser(),
-    "secrets-scan",
-    env.INFLUX_URL,
-    env.INFLUX_API_AUTH
-  )
-  influxdb.sendInfluxPoint(influxdb.START)
+  // def influxdb = new InfluxMetrics(
+  //   this,
+  //   params,
+  //   env,
+  //   config,
+  //   getUser(),
+  //   "secrets-scan",
+  //   env.INFLUX_URL,
+  //   env.INFLUX_API_AUTH
+  // )
+  // influxdb.sendInfluxPoint(influxdb.START)
 
   exit_code = dockerSlaveRunner {
     dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
@@ -101,6 +101,6 @@ def call(body) {
     currentBuild.result = 'FAILURE'
   }
 
-  influxdb.processBuildResult(currentBuild)
+  //influxdb.processBuildResult(currentBuild)
 
 }

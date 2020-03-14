@@ -18,14 +18,14 @@ def call(body) {
   print config
 
   // steps, params, env, config, build_user
-  slack_i = new SlackI(
-    this,
-    params,
-    env,
-    config,
-    getUser()
-  )
-  slack_i.useK8sSufix()
+  // slack_i = new SlackI(
+  //   this,
+  //   params,
+  //   env,
+  //   config,
+  //   getUser()
+  // )
+  // slack_i.useK8sSufix()
   def sendSuccess = false
   def sendStart = false
 
@@ -78,22 +78,22 @@ def call(body) {
     error 'You must provide a k8sEnvTag (K8S_ENV_TAG)'
   }
 
-  if (sendStart){
-    slack_i.send("good", "kubernetesDeployer *START*")
-  }
+  // if (sendStart){
+  //   slack_i.send("good", "kubernetesDeployer *START*")
+  // }
 
   // InfluxDB
-  def influxdb = new InfluxMetrics(
-    this,
-    params,
-    env,
-    config,
-    getUser(),
-    "kubernetes-deployer",
-    env.INFLUX_URL,
-    env.INFLUX_API_AUTH
-  )
-  influxdb.sendInfluxPoint(influxdb.START)
+  // def influxdb = new InfluxMetrics(
+  //   this,
+  //   params,
+  //   env,
+  //   config,
+  //   getUser(),
+  //   "kubernetes-deployer",
+  //   env.INFLUX_URL,
+  //   env.INFLUX_API_AUTH
+  // )
+  // influxdb.sendInfluxPoint(influxdb.START)
 
   node (jenkinsNode){
     try{
@@ -170,18 +170,18 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
 
             echo "SUCCESS"
             currentBuild.result = 'SUCCESS'
-            if (sendSuccess){
-              slack_i.send("good", "kubernetesDeployer *SUCCESS*")
-            }
+            // if (sendSuccess){
+            //   slack_i.send("good", "kubernetesDeployer *SUCCESS*")
+            // }
           }
       }
 
-      influxdb.processBuildResult(currentBuild)
+      //influxdb.processBuildResult(currentBuild)
 
     } catch (err) {
       println err
       currentBuild.result = 'FAILURE'
-      slack_i.send("danger", "kubernetesDeployer *FAILED*")
+      //slack_i.send("danger", "kubernetesDeployer *FAILED*")
       throw err
     }
   }

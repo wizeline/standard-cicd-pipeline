@@ -64,17 +64,17 @@ def call(body) {
   }
 
   // InfluxDB
-  def influxdb = new InfluxMetrics(
-    this,
-    params,
-    env,
-    config,
-    getUser(),
-    "test-flow",
-    env.INFLUX_URL,
-    env.INFLUX_API_AUTH
-  )
-  influxdb.sendInfluxPoint(influxdb.START)
+  // def influxdb = new InfluxMetrics(
+  //   this,
+  //   params,
+  //   env,
+  //   config,
+  //   getUser(),
+  //   "test-flow",
+  //   env.INFLUX_URL,
+  //   env.INFLUX_API_AUTH
+  // )
+  // influxdb.sendInfluxPoint(influxdb.START)
 
   def exit_code
 
@@ -153,7 +153,7 @@ def call(body) {
         }
       }
 
-      influxdb.processBuildResult(currentBuild)
+      //influxdb.processBuildResult(currentBuild)
 
       return return_hash
     } // /node
@@ -161,7 +161,7 @@ def call(body) {
     println err
     currentBuild.result = 'FAILURE'
     slack_i.send("danger", "testExecutor *FAILED*")
-    influxdb.processBuildResult(currentBuild)
+    //influxdb.processBuildResult(currentBuild)
     throw err
   }
 }

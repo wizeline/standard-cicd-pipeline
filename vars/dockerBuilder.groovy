@@ -79,17 +79,17 @@ def call(body) {
   def buildManifestStr
 
   // InfluxDB
-  def influxdb = new InfluxMetrics(
-    this,
-    params,
-    env,
-    config,
-    getUser(),
-    "docker-builder",
-    env.INFLUX_URL,
-    env.INFLUX_API_AUTH
-  )
-  influxdb.sendInfluxPoint(influxdb.START)
+  // def influxdb = new InfluxMetrics(
+  //   this,
+  //   params,
+  //   env,
+  //   config,
+  //   getUser(),
+  //   "docker-builder",
+  //   env.INFLUX_URL,
+  //   env.INFLUX_API_AUTH
+  // )
+  // influxdb.sendInfluxPoint(influxdb.START)
 
   node (jenkinsNode){
     try{
@@ -216,7 +216,7 @@ $build_args
           } // /withCredentials
       } // /stage('DockerBuildRetagPush')
 
-      influxdb.processBuildResult(currentBuild)
+      //influxdb.processBuildResult(currentBuild)
       return 0
 
     } catch (err) {
@@ -227,7 +227,7 @@ $build_args
                    color:'danger',
                    message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
       }
-      influxdb.processBuildResult(currentBuild)
+      //influxdb.processBuildResult(currentBuild)
       throw err
     }
   } // /node

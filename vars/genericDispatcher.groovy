@@ -59,14 +59,14 @@ def call(body) {
   def jobDockerDaemonPort  = config.dockerDaemonPort ?: DefaultValues.defaultDockerDaemonPort
 
   // Slack
-  def jobSlackChannelName  = params.SLACK_CHANNEL_NAME
-  slack_i = new SlackI(
-    this,
-    params,
-    env,
-    config,
-    getUser()
-  )
+  // def jobSlackChannelName  = params.SLACK_CHANNEL_NAME
+  // slack_i = new SlackI(
+  //   this,
+  //   params,
+  //   env,
+  //   config,
+  //   getUser()
+  // )
   def sendSuccess = false
   def sendStart = false
 
@@ -76,22 +76,22 @@ def call(body) {
   def disableUnitTests = config.disableUnitTests ?: 'false'
   def disableBuildImage = config.disableBuildImage ?: 'false'
 
-  if (sendStart){
-    slack_i.send("good", "genericDispatcher *START*")
-  }
+  // if (sendStart){
+  //   slack_i.send("good", "genericDispatcher *START*")
+  // }
 
   // InfluxDB
-  def influxdb = new InfluxMetrics(
-    this,
-    params,
-    env,
-    config,
-    getUser(),
-    "app-ci-flow",
-    env.INFLUX_URL,
-    env.INFLUX_API_AUTH
-  )
-  influxdb.sendInfluxPoint(influxdb.START)
+  // def influxdb = new InfluxMetrics(
+  //   this,
+  //   params,
+  //   env,
+  //   config,
+  //   getUser(),
+  //   "app-ci-flow",
+  //   env.INFLUX_URL,
+  //   env.INFLUX_API_AUTH
+  // )
+  // influxdb.sendInfluxPoint(influxdb.START)
 
   try{
 
@@ -257,10 +257,10 @@ def call(body) {
     }
   }
 
-  influxdb.processBuildResult(currentBuild)
-  if (sendSuccess){
-    slack_i.send("good", "genericDispatcher *SUCCESS*")
-  }
+  // influxdb.processBuildResult(currentBuild)
+  // if (sendSuccess){
+  //   slack_i.send("good", "genericDispatcher *SUCCESS*")
+  // }
 
   return return_hash
 
@@ -268,8 +268,8 @@ def call(body) {
     println err
     echo "FAILURE"
     currentBuild.result = 'FAILURE'
-    slack_i.send("danger", "genericDispatcher *FAILED*")
-    influxdb.processBuildResult(currentBuild)
+    // slack_i.send("danger", "genericDispatcher *FAILED*")
+    // influxdb.processBuildResult(currentBuild)
     throw err
   }
 

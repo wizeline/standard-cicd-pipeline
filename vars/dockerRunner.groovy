@@ -52,17 +52,17 @@ def call(body) {
   def jenkinsNode = config.jenkinsNode
 
   // InfluxDB
-  def influxdb = new InfluxMetrics(
-    this,
-    params,
-    env,
-    config,
-    getUser(),
-    "docker-runner",
-    env.INFLUX_URL,
-    env.INFLUX_API_AUTH
-  )
-  influxdb.sendInfluxPoint(influxdb.START)
+  // def influxdb = new InfluxMetrics(
+  //   this,
+  //   params,
+  //   env,
+  //   config,
+  //   getUser(),
+  //   "docker-runner",
+  //   env.INFLUX_URL,
+  //   env.INFLUX_API_AUTH
+  // )
+  // influxdb.sendInfluxPoint(influxdb.START)
 
   def exit_code
 
@@ -141,7 +141,7 @@ def call(body) {
         }
       } // /stage('RunContainer')
 
-      influxdb.processBuildResult(currentBuild)
+      //influxdb.processBuildResult(currentBuild)
       return exit_code
 
     } catch (err) {
@@ -152,7 +152,7 @@ def call(body) {
                   color:'danger',
                   message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName},  dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
       }
-      influxdb.processBuildResult(currentBuild)
+      //influxdb.processBuildResult(currentBuild)
       throw err
     }
   }
