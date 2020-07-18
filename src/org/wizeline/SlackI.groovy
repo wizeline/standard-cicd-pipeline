@@ -50,6 +50,12 @@ public class SlackI implements Serializable {
       this.sufix = "\n${job_name_number}${deployment_artifact} in ${deployment_env}"
     }
 
+    @NonCPS
+    private void useTestsSufix(){
+      def job_name_number = "${this.job_name} - ${this.build_number}\n(${this.build_url})\n"
+      this.sufix = "\n${job_name_number}"
+    }
+
     def send(color, message){
       if (this.slackChannelName && !this.muteSlack) {
         this.steps.slackSend channel: "#${this.slackChannelName}",

@@ -1,6 +1,8 @@
 //#!Groovy
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
+import org.wizeline.InfluxMetrics
+import org.wizeline.BuildManifest
 
 def call(body) {
 
@@ -41,6 +43,8 @@ def call(body) {
   def slackToken       = config.slackToken
   def muteSlack        = config.muteSlack ?: DefaultValues.defaultMuteSlack
   muteSlack = (muteSlack == 'true')
+  def sendSuccess = false
+  def sendStart = false
 
   // Git Info
   def gitRepoUrl       = config.gitRepoUrl
@@ -70,7 +74,22 @@ def call(body) {
   def jobDisableSubmodules = (config.disableSubmodules == "true") ? "true" : "false"
   println "disableSubmodules: ${jobDisableSubmodules}"
 
+  // BuildManifest
+  def buildManifest
+  def buildManifestStr
 
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "docker-builder",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
 
   node (jenkinsNode){
     try{
@@ -88,31 +107,49 @@ def call(body) {
         gitBranch = git_info["git-branch"]
         gitSha = git_info["git-commit-sha"]
 
+        buildManifest = new BuildManifest(
+          this,
+          params,
+          env,
+          config,
+          getUser(),
+          git_info,
+          "docker-builder"
+        )
+        buildManifestStr = buildManifest.generate()
+        println "buildManifest: ${buildManifestStr}"
+        writeFile file: "build-manifest.json", text: buildManifestStr
+
         echo "Branch: ${gitBranch}"
         echo "SHA: ${gitSha}"
 
-        if (config.slackChannelName && !muteSlack){
+        if (config.slackChannelName && sendStart && !muteSlack){
           slackSend channel:"#${slackChannelName}",
                     color:'good',
                     message:"*START* Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER}\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* :${getUser()}"
         }
       }
 
-     stage('DockerBuildRetagPush'){
+      stage('DockerBuildRetagPush'){
 
-         withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                         credentialsId: dockerRegistryCredentialsId,
-                         passwordVariable: 'DOCKER_REGISTRY_PASSWORD',
-                         usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
+          withCredentials([[$class: 'UsernamePasswordMultiBinding',
+                          credentialsId: dockerRegistryCredentialsId,
+                          passwordVariable: 'DOCKER_REGISTRY_PASSWORD',
+                          usernameVariable: 'DOCKER_REGISTRY_USERNAME']]) {
 
           def workspace = pwd()
-          def job_as_service_image = DefaultValues.defaultJobsAsAServiceImage
+          def job_as_service_image = "${DefaultValues.defaultJobsAsAServiceImage}:${DefaultValues.defaultJobsAsAServiceImageTag}"
 
           // Using a load balancer get the ip of a dockerdaemon and keep it for
           // future use.
           dockerDaemon = DockerdDiscovery.getDockerDaemon(this, dockerDaemonHost, dockerDaemonPort, dockerDaemonDnsDiscovery)
 
           def dockerCommitTag = dockerEnvTag
+
+          // Feed the external build args
+          def build_args = sh script: """
+          env | grep -e '^DOCKER_ARG_' || true
+          """, returnStdout: true
 
           env_vars = """DOCKER_REGISTRY=$dockerRegistry
 DOCKER_IMAGE_NAME=$dockerImageName
@@ -126,6 +163,7 @@ DOCKER_TLS_VERIFY=""
 DOCKER_DAEMON_URL=$dockerDaemon
 DOCKER_REGISTRY_PASSWORD=$DOCKER_REGISTRY_PASSWORD
 DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
+$build_args
 """
 
           writeFile file: ".env", text: env_vars
@@ -163,35 +201,34 @@ DOCKER_REGISTRY_USERNAME=$DOCKER_REGISTRY_USERNAME
           if (exit_code != 0 && exit_code != TAG_ALREADY_EXIST_CODE){
             echo "FAILURE"
             currentBuild.result = 'FAILURE'
-            if (config.slackChannelName && !muteSlack){
-              slackSend channel:"#${slackChannelName}",
-                        color:'danger',
-                        message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
-            }
+            // error will trigger catch and slack and influx will be sent.
             error("FAILURE - Build container returned non 0 exit code")
             return 1
           }
 
           echo "SUCCESS"
           currentBuild.result = 'SUCCESS'
-          if (config.slackChannelName && !muteSlack){
+          if (config.slackChannelName && sendSuccess && !muteSlack){
             slackSend channel:"#${slackChannelName}",
                       color:'good',
                       message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
           }
-         }
-     }
-     } catch (err) {
-       println err
-       if (config.slackChannelName && !muteSlack){
-         slackSend channel:"#${slackChannelName}",
+          } // /withCredentials
+      } // /stage('DockerBuildRetagPush')
+
+      influxdb.processBuildResult(currentBuild)
+      return 0
+
+    } catch (err) {
+      println err
+      currentBuild.result = 'FAILURE'
+      if (config.slackChannelName && !muteSlack){
+        slackSend channel:"#${slackChannelName}",
                    color:'danger',
                    message:"Build (dockerBuilder) of ${gitSha}:${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerEnvTag: ${dockerEnvTag}\n*Build started by* : ${getUser()}"
-       }
-       throw err
-     }
-
-   }
-
-
+      }
+      influxdb.processBuildResult(currentBuild)
+      throw err
+    }
+  } // /node
 }

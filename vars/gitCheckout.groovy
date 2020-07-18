@@ -23,7 +23,7 @@ def call(body) {
                           parentCredentials: true,
                           recursiveSubmodules: true,
                           reference: '',
-                          trackingSubmodules: true]],
+                          trackingSubmodules: false]],
             submoduleCfg: [],
             userRemoteConfigs: [
               [
@@ -34,10 +34,14 @@ def call(body) {
         ])
 
   sh "ls -la"
+  sh "git ls-tree -r HEAD | head -n 50"
 
   return_hash = [:]
   return_hash["git-branch"] = sh(returnStdout:true, script:'git rev-parse --abbrev-ref HEAD').trim()
   return_hash["git-commit-sha"] = sh(returnStdout:true, script:'git rev-parse HEAD').trim()
+  return_hash["git-author"] = sh(returnStdout:true, script:"git log -1 --pretty=format:'%aN <%aE>'").trim()
+  return_hash["git-sha-arg"] = config.branch
+  return_hash["git-repo-url"] = config.repoUrl
 
   return return_hash
 }

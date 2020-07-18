@@ -12,7 +12,7 @@ def call(body) {
     body()
   }
 
-  echo "dockerRunner.groovy"
+  echo "dockerSlaveRunner.groovy"
   print config
 
   // Validations
@@ -45,6 +45,8 @@ def call(body) {
   def slackToken       = config.slackToken
   def muteSlack        = config.muteSlack ?: DefaultValues.defaultMuteSlack
   muteSlack = (muteSlack == 'true')
+  def sendSuccess = false
+  def sendStart = false
 
   // Git Info
   def gitRepoUrl       = config.gitRepoUrl

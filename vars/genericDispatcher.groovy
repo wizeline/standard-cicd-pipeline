@@ -2,6 +2,7 @@
 import org.wizeline.SlackI
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
+import org.wizeline.InfluxMetrics
 
 def is_main_branch(){
   return params.BRANCH == "origin/develop" ||
@@ -59,11 +60,40 @@ def call(body) {
 
   // Slack
   def jobSlackChannelName  = params.SLACK_CHANNEL_NAME
+  slack_i = new SlackI(
+    this,
+    params,
+    env,
+    config,
+    getUser()
+  )
+  def sendSuccess = false
+  def sendStart = false
 
   def jobJenkinsNode       = config.jobJenkinsNode ?: params.JENKINS_NODE
 
   def disableLint = config.disableLint ?: 'false'
   def disableUnitTests = config.disableUnitTests ?: 'false'
+  def disableBuildImage = config.disableBuildImage ?: 'false'
+
+  if (sendStart){
+    slack_i.send("good", "genericDispatcher *START*")
+  }
+
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "app-ci-flow",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
+
+  try{
 
   node {
     stage ('Checkout') {
@@ -88,6 +118,7 @@ def call(body) {
   tasks["unit_tests"] = {
     stage("unit-tests:"){
       if (disableUnitTests != 'true'){
+        // def test_tag = "unit-test-${return_hash["git-sha"]}"
         def test_tag = "unit-test"
         dockerBuilder {
             gitRepoUrl = jobGitRepoUrl
@@ -139,6 +170,7 @@ def call(body) {
   tasks["lint"] = {
     stage("lint:"){
       if (disableLint != 'true'){
+        // def lint_tag = "lint-${return_hash["git-sha"]}"
         def lint_tag = "lint"
         dockerBuilder {
             gitRepoUrl = jobGitRepoUrl
@@ -194,9 +226,10 @@ def call(body) {
     currentBuild.result = 'SUCCESS'
   }
 
-  if (is_main_branch() || is_force_build()) {
+  if ((disableBuildImage != "true") && (is_main_branch() || is_force_build())) {
     stage("build-image:") {
       def branchTag = jobGitShaNoOrigin.replace("/", "_").replace("origin", "")
+      def noTagCheck = is_force_build() ? "true" : "false"
       dockerBuilder {
           gitRepoUrl        = jobGitRepoUrl
           gitCredentialsId  = jobGitCredentialsId
@@ -213,6 +246,7 @@ def call(body) {
 
           dockerSourceRelativePath = jobDockerSourceRelativePath
           dockerDockerfile         = jobDockerDockerfile
+          dockerNoTagCheck         = noTagCheck
 
           dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
           dockerDaemonHost = jobDockerDaemonHost
@@ -223,6 +257,20 @@ def call(body) {
     }
   }
 
+  influxdb.processBuildResult(currentBuild)
+  if (sendSuccess){
+    slack_i.send("good", "genericDispatcher *SUCCESS*")
+  }
+
   return return_hash
+
+  } catch (err) {
+    println err
+    echo "FAILURE"
+    currentBuild.result = 'FAILURE'
+    slack_i.send("danger", "genericDispatcher *FAILED*")
+    influxdb.processBuildResult(currentBuild)
+    throw err
+  }
 
 }

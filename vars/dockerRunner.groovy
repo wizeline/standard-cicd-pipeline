@@ -1,6 +1,7 @@
 //#!Groovy
 import org.wizeline.DefaultValues
 import org.wizeline.DockerdDiscovery
+import org.wizeline.InfluxMetrics
 
 def call(body) {
 
@@ -33,6 +34,8 @@ def call(body) {
   def slackToken       = config.slackToken
   def muteSlack        = config.muteSlack ?: DefaultValues.defaultMuteSlack
   muteSlack = (muteSlack == 'true')
+  def sendSuccess = false
+  def sendStart = false
 
   // For service discovery only
   def dockerDaemonHost = config.dockerDaemonHost
@@ -47,6 +50,21 @@ def call(body) {
   def dockerImageTag   = config.dockerImageTag
 
   def jenkinsNode = config.jenkinsNode
+
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "docker-runner",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
+
+  def exit_code
 
   node (jenkinsNode){
     try {
@@ -74,13 +92,26 @@ def call(body) {
 
           sh "echo \"$DOCKER_REGISTRY_PASSWORD\" | $docker_bin login -u $DOCKER_REGISTRY_USERNAME --password-stdin $dockerRegistry"
 
-          // Call the buidler container
+
+          // Feed the external environment vars
+          def env_file = sh script: """
+          env | grep -e '^DOCKER_ENV_' || printf 'DOCKER_ENV_NULL=true'
+
+          """, returnStdout: true
+
+          // Create environment file for docker
+          env_file = env_file.replaceAll("DOCKER_ENV_", "")
+          writeFile file: "docker_env", text: env_file
+
+          // Call the runner container
           exit_code = sh script: """
-          set +e
+          set -e
 
           $docker_bin pull $dockerRegistry/$dockerImageName:$dockerImageTag || true
-          docker_id=\$($docker_bin create $dockerRegistry/$dockerImageName:$dockerImageTag)
+          docker_id=\$($docker_bin create --env-file docker_env $dockerRegistry/$dockerImageName:$dockerImageTag)
           $docker_bin start -ai \$docker_id || EXIT_CODE=\$? && true
+
+          rm -f docker_env
 
           [ -n "\$EXIT_CODE" ] && exit \$EXIT_CODE;
           exit 0
@@ -95,31 +126,33 @@ def call(body) {
           if (exit_code != 0 && exit_code != 3){
             echo "FAILURE"
             currentBuild.result = 'FAILURE'
-            if (config.slackChannelName && !muteSlack){
-              slackSend channel:"#${slackChannelName}",
-                        color:'danger',
-                        message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
-            }
+            // error will trigger catch and slack and influx will be sent.
             error("FAILURE - Run container returned non 0 exit code")
             return 1
           }
 
           echo "SUCCESS"
           currentBuild.result = 'SUCCESS'
-          if (config.slackChannelName && !muteSlack){
+          if (config.slackChannelName && sendSuccess && !muteSlack){
             slackSend channel:"#${slackChannelName}",
                       color:'good',
                       message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *SUCCESS*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName}, dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
           }
         }
-      }
+      } // /stage('RunContainer')
+
+      influxdb.processBuildResult(currentBuild)
+      return exit_code
+
     } catch (err) {
       println err
+      currentBuild.result = 'FAILURE'
       if (config.slackChannelName && !muteSlack){
         slackSend channel:"#${slackChannelName}",
                   color:'danger',
                   message:"Build (dockerRunner) of ${env.JOB_NAME} - ${env.BUILD_NUMBER} *FAILED*\n(${env.BUILD_URL})\ndockerImageName: ${dockerImageName},  dockerImageTag: ${dockerImageTag}\n*Build started by* : ${getUser()}"
       }
+      influxdb.processBuildResult(currentBuild)
       throw err
     }
   }

@@ -1,5 +1,6 @@
 import org.wizeline.SlackI
 import org.wizeline.DefaultValues
+import org.wizeline.InfluxMetrics
 
 def call(body) {
 
@@ -13,6 +14,7 @@ def call(body) {
     body()
   }
 
+  echo "secretsScan.groovy"
   print config
 
   // Docker Daemon
@@ -36,6 +38,7 @@ def call(body) {
 
   def commits_MaxDepth = params.COMMITS_MAX_DEPTH ?: '5'
 
+  // Slack
   slack_i = new SlackI(
     this,
     params,
@@ -43,8 +46,25 @@ def call(body) {
     config,
     getUser()
   )
+  def sendSuccess = false
+  def sendStart = false
 
-  slack_i.send('good', "*START* secret-scan (secretsScan)")
+  if (sendStart){
+    slack_i.send('good', "*START* secret-scan (secretsScan)")
+  }
+
+  // InfluxDB
+  def influxdb = new InfluxMetrics(
+    this,
+    params,
+    env,
+    config,
+    getUser(),
+    "secrets-scan",
+    env.INFLUX_URL,
+    env.INFLUX_API_AUTH
+  )
+  influxdb.sendInfluxPoint(influxdb.START)
 
   exit_code = dockerSlaveRunner {
     dockerDaemonDnsDiscovery = jobDockerDaemonDnsDiscovery
@@ -70,7 +90,9 @@ def call(body) {
   }
 
   if (exit_code == 0) {
-    slack_i.send('good', "*SUCCESS* No secrets found (secretsScan)")
+    if (sendSuccess){
+      slack_i.send('good', "*SUCCESS* No secrets found (secretsScan)")
+    }
     echo "SUCCESS"
     currentBuild.result = 'SUCCESS'
   } else {
@@ -78,5 +100,7 @@ def call(body) {
     echo "FAILURE"
     currentBuild.result = 'FAILURE'
   }
+
+  influxdb.processBuildResult(currentBuild)
 
 }
